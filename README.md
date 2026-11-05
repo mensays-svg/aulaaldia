@@ -37,3 +37,13 @@ En este entorno usa Node.js 24 y `NODE_USE_ENV_PROXY=1 npm run dev` (o `NODE_USE
 ## Módulos escolares
 
 El panel incluye aulas, estudiantes, roles y vínculos con docentes y apoderados. Para activarlos en el proyecto Supabase, sigue [la guía de base de datos](supabase/README.md). Hasta instalar la migración y asignar el primer administrador, la app conserva el inicio/cierre de sesión y muestra un aviso de configuración o de cuenta pendiente de vinculación.
+
+### Carga de estudiantes en bloque
+
+En **Estudiantes → Cargar estudiantes en bloque**, selecciona un aula, descarga la plantilla y sube un CSV UTF-8 con las columnas `dni,nombres,apellidos`. Puedes prepararlo en Excel usando formato Texto en la columna DNI y guardarlo como CSV UTF-8. No se admiten directamente archivos `.xlsx` o `.xls`.
+
+Se aceptan hasta 500 estudiantes y 256 KB por archivo, con separadores de coma, punto y coma o tabulación. En esta modalidad el DNI es obligatorio y debe conservar ocho dígitos; los estudiantes sin DNI pueden registrarse individualmente. No se reemplazan alumnos existentes ni se los cambia de aula durante la importación.
+
+La revisión muestra las filas con errores o DNI ya existentes y bloquea la carga hasta corregirlos. Una vista previa correcta habilita la confirmación. El servidor vuelve a validar permisos, institución, aula, archivo y DNI al confirmar; el lote se inserta en una sola operación. Un conflicto de datos rechaza el lote completo. Si se pierde la conexión durante el guardado, comprueba el listado antes de reintentar. Los DNI únicos evitan duplicar registros en los reintentos.
+
+La carga está disponible para administrador, director y auxiliar. No requiere nuevas tablas ni migraciones. `npm run test:import` valida el lector CSV; `npm run test:permissions` comprueba permisos e inserciones de lotes en PostgreSQL.

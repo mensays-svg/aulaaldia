@@ -17,6 +17,13 @@ async function as(user){await db.exec('reset role');await db.query("select set_c
 async function count(table,expected){const {rows}=await db.query(`select count(*)::int n from public.${table}`);assert.equal(rows[0].n,expected,table);checks++}
 async function denied(sql,args){await assert.rejects(db.query(sql,args));checks++}
 await as(1); await count('students',3); await count('classrooms',2)
+await denied("insert into public.students(institution_id,classroom_id,dni,first_names,last_names) values($1,$2,'00123456','Primero','Importado'),($1,$2,'00123456','Repetido','Importado')",[id(101),id(201)])
+await count('students',3)
+await db.query("insert into public.students(institution_id,classroom_id,dni,first_names,last_names) values($1,$2,'00123456','Primero','Importado'),($1,$2,'00123457','Segundo','Importado')",[id(101),id(201)])
+await count('students',5)
+await denied("insert into public.students(institution_id,classroom_id,dni,first_names,last_names) values($1,$2,'00123456','Existente','Importado'),($1,$2,'00123458','Nuevo','Importado')",[id(101),id(201)])
+await count('students',5)
+await db.exec("reset role;delete from public.students where dni is not null;set role authenticated")
 await denied('select public.remove_school_role($1,$2,$3)',[id(101),id(1),'administrador'])
 await as(2); await count('students',3)
 await as(3); await count('students',3);await denied('select * from public.list_school_members($1)',[id(101)])
