@@ -8,7 +8,8 @@
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test:permissions": "node scripts/permissions.mjs",
-    "test:import": "node --experimental-strip-types scripts/student-import.mjs"
+    "test:import": "node --experimental-strip-types scripts/student-import.mjs",
+    "test:import-db": "node scripts/unified-import.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -38,12 +38,16 @@ En este entorno usa Node.js 24 y `NODE_USE_ENV_PROXY=1 npm run dev` (o `NODE_USE
 
 El panel incluye aulas, estudiantes, roles y vínculos con docentes y apoderados. Para activarlos en el proyecto Supabase, sigue [la guía de base de datos](supabase/README.md). Hasta instalar la migración y asignar el primer administrador, la app conserva el inicio/cierre de sesión y muestra un aviso de configuración o de cuenta pendiente de vinculación.
 
-### Carga de estudiantes en bloque
+### Carga de estudiantes y aulas con formato único
 
-En **Estudiantes → Cargar estudiantes en bloque**, selecciona un aula, descarga la plantilla y sube un CSV UTF-8 con las columnas `dni,nombres,apellidos`. Puedes prepararlo en Excel usando formato Texto en la columna DNI y guardarlo como CSV UTF-8. No se admiten directamente archivos `.xlsx` o `.xls`.
+En **Estudiantes → Cargar estudiantes en bloque**, descarga la plantilla única y completa `dni,nombres,apellidos,año,nivel,grado,sección`. Un archivo puede contener estudiantes de distintas aulas, niveles y años. Guárdalo desde Excel como **CSV UTF-8**, con la columna DNI en formato Texto para conservar los ceros iniciales. No se admiten directamente archivos `.xlsx` o `.xls`.
 
-Se aceptan hasta 500 estudiantes y 256 KB por archivo, con separadores de coma, punto y coma o tabulación. En esta modalidad el DNI es obligatorio y debe conservar ocho dígitos; los estudiantes sin DNI pueden registrarse individualmente. No se reemplazan alumnos existentes ni se los cambia de aula durante la importación.
+Se aceptan hasta 500 estudiantes y 256 KB por archivo, con separadores de coma, punto y coma o tabulación. Año: cuatro dígitos entre 2000 y 2100. Nivel: Inicial, Primaria o Secundaria. Grado: Inicial 3, 4 o 5 años; Primaria 1–6; Secundaria 1–5. Sección: obligatoria, se convierte a mayúsculas. El aula se identifica por institución + año + nivel + grado + sección. Las formas habituales de grado (1, 1.º, primero) se consideran equivalentes.
 
-La revisión muestra las filas con errores o DNI ya existentes y bloquea la carga hasta corregirlos. Una vista previa correcta habilita la confirmación. El servidor vuelve a validar permisos, institución, aula, archivo y DNI al confirmar; el lote se inserta en una sola operación. Un conflicto de datos rechaza el lote completo. Si se pierde la conexión durante el guardado, comprueba el listado antes de reintentar. Los DNI únicos evitan duplicar registros en los reintentos.
+El DNI es obligatorio en la carga masiva. Los alumnos sin DNI pueden registrarse individualmente. Los DNI repetidos en el archivo o ya registrados en la institución bloquean la carga; no se trasladan ni reemplazan estudiantes existentes. Para nuevas matrículas de alumnos existentes se necesitará el futuro módulo de matrícula histórica.
 
-La carga está disponible para administrador, director y auxiliar. No requiere nuevas tablas ni migraciones. `npm run test:import` valida el lector CSV; `npm run test:permissions` comprueba permisos e inserciones de lotes en PostgreSQL.
+La vista previa lista los estudiantes y distingue aulas existentes de aulas por crear. Antes de confirmar no se guarda nada. La nueva función de base de datos comprueba permisos, DNI y campos otra vez y guarda aulas y estudiantes en una única transacción: si falla un registro, se revierte todo el lote. Un reintento con los mismos DNI no duplica estudiantes. Si se pierde la conexión, comprueba el listado antes de volver a intentarlo.
+
+**Activación necesaria:** si ya instalaste la base escolar, ejecuta únicamente `supabase/migrations/202611050002_unified_student_import.sql` en Supabase SQL Editor. No repitas la primera migración ni el bootstrap. Para una instalación nueva, aplica las dos migraciones en orden y después el bootstrap. La función permite esta importación a administrador, director y auxiliar dentro de su institución; no abre creación de aulas a docentes ni apoderados.
+
+Validación: `npm run test:import`, `npm run test:import-db`, `npm run test:permissions` y `npm run build`. Las pruebas PostgreSQL se ejecutan en PGlite con usuarios simulados; no modifican datos reales.
