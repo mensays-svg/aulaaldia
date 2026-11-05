@@ -51,3 +51,9 @@ La vista previa lista los estudiantes y distingue aulas existentes de aulas por 
 **Activación necesaria:** si ya instalaste la base escolar, ejecuta únicamente `supabase/migrations/202611050002_unified_student_import.sql` en Supabase SQL Editor. No repitas la primera migración ni el bootstrap. Para una instalación nueva, aplica las dos migraciones en orden y después el bootstrap. La función permite esta importación a administrador, director y auxiliar dentro de su institución; no abre creación de aulas a docentes ni apoderados.
 
 Validación: `npm run test:import`, `npm run test:import-db`, `npm run test:permissions` y `npm run build`. Las pruebas PostgreSQL se ejecutan en PGlite con usuarios simulados; no modifican datos reales.
+
+### Entrada y salida (portería)
+
+Incluye búsqueda por DNI/apellidos/nombres, carnet y lector QR, entradas, salidas de jornada, salidas anticipadas autorizadas, retornos e historial por fecha. El estado se controla por día de Lima, con hora del servidor y prevención de duplicados. Auxiliar, director y administrador pueden marcar; docentes y apoderados consultan solo a sus estudiantes autorizados. Dirección puede definir horarios por aula para clasificar el primer ingreso.
+
+Para activar este módulo, ejecutar únicamente `supabase/migrations/202611050003_gate_attendance.sql`. Consulta la [guía de portería](supabase/PORTERIA.md) para activación, permisos, uso de cámara, horarios y pruebas. La asistencia de cada clase y las notas de comportamiento siguen pendientes.

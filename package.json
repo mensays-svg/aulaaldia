@@ -9,13 +9,17 @@
     "typecheck": "tsc --noEmit",
     "test:permissions": "node scripts/permissions.mjs",
     "test:import": "node --experimental-strip-types scripts/student-import.mjs",
-    "test:import-db": "node scripts/unified-import.mjs"
+    "test:import-db": "node scripts/unified-import.mjs",
+    "test:gate": "node scripts/gate-attendance.mjs",
+    "test:gate-qr": "node --experimental-strip-types scripts/gate-qr.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.119.0",
+    "@zxing/browser": "^0.2.1",
     "next": "16.4.5",
     "papaparse": "^5.7.0",
+    "qrcode": "^1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -23,8 +27,11 @@
     "@electric-sql/pglite": "^0.5.15",
     "@types/node": "^24.0.0",
     "@types/papaparse": "^5.5.2",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@zxing/library": "^0.23.0",
+    "pngjs": "^7.0.0",
     "typescript": "^5.9.0"
   }
 }
