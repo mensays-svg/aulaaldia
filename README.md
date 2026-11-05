@@ -48,7 +48,7 @@ El DNI es obligatorio en la carga masiva. Los alumnos sin DNI pueden registrarse
 
 La vista previa lista los estudiantes y distingue aulas existentes de aulas por crear. Antes de confirmar no se guarda nada. La nueva función de base de datos comprueba permisos, DNI y campos otra vez y guarda aulas y estudiantes en una única transacción: si falla un registro, se revierte todo el lote. Un reintento con los mismos DNI no duplica estudiantes. Si se pierde la conexión, comprueba el listado antes de volver a intentarlo.
 
-**Activación necesaria:** si ya instalaste la base escolar, ejecuta únicamente `supabase/migrations/202611050002_unified_student_import.sql` en Supabase SQL Editor. No repitas la primera migración ni el bootstrap. Para una instalación nueva, aplica las dos migraciones en orden y después el bootstrap. La función permite esta importación a administrador, director y auxiliar dentro de su institución; no abre creación de aulas a docentes ni apoderados.
+**Activación necesaria:** si ya instalaste la base escolar, ejecuta únicamente `supabase/migrations/202611050002_unified_student_import.sql` en Supabase SQL Editor. No repitas la primera migración ni el bootstrap. Para una instalación nueva, aplica todas las migraciones en orden y después el bootstrap. La función permite esta importación a administrador, director y auxiliar dentro de su institución; no abre creación de aulas a docentes ni apoderados.
 
 Validación: `npm run test:import`, `npm run test:import-db`, `npm run test:permissions` y `npm run build`. Las pruebas PostgreSQL se ejecutan en PGlite con usuarios simulados; no modifican datos reales.
 
@@ -56,4 +56,10 @@ Validación: `npm run test:import`, `npm run test:import-db`, `npm run test:perm
 
 Incluye búsqueda por DNI/apellidos/nombres, carnet y lector QR, entradas, salidas de jornada, salidas anticipadas autorizadas, retornos e historial por fecha. El estado se controla por día de Lima, con hora del servidor y prevención de duplicados. Auxiliar, director y administrador pueden marcar; docentes y apoderados consultan solo a sus estudiantes autorizados. Dirección puede definir horarios por aula para clasificar el primer ingreso.
 
-Para activar este módulo, ejecutar únicamente `supabase/migrations/202611050003_gate_attendance.sql`. Consulta la [guía de portería](supabase/PORTERIA.md) para activación, permisos, uso de cámara, horarios y pruebas. La asistencia de cada clase y las notas de comportamiento siguen pendientes.
+Para activar este módulo, ejecutar únicamente `supabase/migrations/202611050003_gate_attendance.sql`. Consulta la [guía de portería](supabase/PORTERIA.md) para activación, permisos, uso de cámara, horarios y pruebas. Las notas de comportamiento siguen pendientes.
+
+### Asistencia por clase
+
+Disponible en **Asistencia por clase** para docentes asignados, dirección/administración y consulta de apoderados. Incluye cursos, sesiones con aula y horario, lista fija de estudiantes, presentes/tardanzas/faltas/justificaciones, avances, cierre, reapertura y correcciones con motivo. El apoderado ve solo las filas de sus hijos en sesiones cerradas. La referencia de portería no marca ni justifica automáticamente la asistencia.
+
+Para activar, ejecutar únicamente `supabase/migrations/202611050004_class_attendance.sql`. La [guía de clases](supabase/CLASES.md) explica permisos y el recorrido de prueba. `npm run test:classes` valida el ciclo y los permisos en PostgreSQL embebido. El docente debe tener el rol y el aula asignados antes de crear sesiones.

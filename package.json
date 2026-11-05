@@ -11,7 +11,8 @@
     "test:import": "node --experimental-strip-types scripts/student-import.mjs",
     "test:import-db": "node scripts/unified-import.mjs",
     "test:gate": "node scripts/gate-attendance.mjs",
-    "test:gate-qr": "node --experimental-strip-types scripts/gate-qr.mjs"
+    "test:gate-qr": "node --experimental-strip-types scripts/gate-qr.mjs",
+    "test:classes": "node scripts/class-attendance.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -21,7 +21,7 @@ En una instalación nueva, aplicar las migraciones en orden y después el bootst
 - Salida anticipada con retorno previsto: solo permite retorno.
 - Fuera sin retorno previsto: permite una nueva entrada/reingreso.
 
-Las horas se guardan en el servidor y se muestran en **America/Lima**. El estado se calcula por día local; no se diseñó para turnos nocturnos que cruzan medianoche. No se marcan faltas automáticamente por ausencia de movimientos. No se altera la asistencia por clase, que será otro módulo.
+Las horas se guardan en el servidor y se muestran en **America/Lima**. El estado se calcula por día local; no se diseñó para turnos nocturnos que cruzan medianoche. No se marcan faltas automáticamente por ausencia de movimientos. No se altera la asistencia por clase, que se registra en su propio módulo.
 
 Cada intento tiene un UUID único. Reintentar la misma solicitud conserva su resultado sin duplicar el evento. Si una conexión se pierde, no cambies los datos antes de reintentar o revisa primero el historial. Los movimientos son de solo anexado: no se permiten cambios o borrados directos desde la app. Una corrección formal con motivo y trazabilidad requerirá un flujo posterior; no se debe editar directamente un registro para ocultar un error.
 
