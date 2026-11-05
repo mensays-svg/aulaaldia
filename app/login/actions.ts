@@ -1,6 +1,7 @@
 'use server'
 import { redirect } from 'next/navigation'
 import { createClient, configured } from '@/lib/supabase/server'
+import { authErrorMessage } from '@/lib/supabase/auth-error'
 
 export async function authenticate(form: FormData) {
   if (!configured()) redirect('/login?message=Configura%20Supabase%20para%20continuar.')
@@ -12,7 +13,14 @@ export async function authenticate(form: FormData) {
   const { data, error } = signup
     ? await supabase.auth.signUp({ email, password })
     : await supabase.auth.signInWithPassword({ email, password })
-  if (error) redirect('/login?message=' + encodeURIComponent(signup ? 'No se pudo crear la cuenta. Comprueba los datos e inténtalo de nuevo.' : 'No se pudo iniciar sesión. Comprueba tus datos y confirma tu correo.'))
+  if (error) {
+    console.error('Authentication failed', {
+      operation: signup ? 'signup' : 'login',
+      code: error.code ?? 'unknown',
+      status: error.status,
+    })
+    redirect('/login?message=' + encodeURIComponent(authErrorMessage(error, signup)))
+  }
   if (!data.session) redirect('/login?message=Revisa%20tu%20correo%20para%20confirmar%20tu%20cuenta.')
   redirect('/dashboard')
 }
