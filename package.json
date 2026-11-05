@@ -12,7 +12,8 @@
     "test:import-db": "node scripts/unified-import.mjs",
     "test:gate": "node scripts/gate-attendance.mjs",
     "test:gate-qr": "node --experimental-strip-types scripts/gate-qr.mjs",
-    "test:classes": "node scripts/class-attendance.mjs"
+    "test:classes": "node scripts/class-attendance.mjs",
+    "test:behavior": "node scripts/behavior.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

@@ -56,10 +56,16 @@ Validación: `npm run test:import`, `npm run test:import-db`, `npm run test:perm
 
 Incluye búsqueda por DNI/apellidos/nombres, carnet y lector QR, entradas, salidas de jornada, salidas anticipadas autorizadas, retornos e historial por fecha. El estado se controla por día de Lima, con hora del servidor y prevención de duplicados. Auxiliar, director y administrador pueden marcar; docentes y apoderados consultan solo a sus estudiantes autorizados. Dirección puede definir horarios por aula para clasificar el primer ingreso.
 
-Para activar este módulo, ejecutar únicamente `supabase/migrations/202611050003_gate_attendance.sql`. Consulta la [guía de portería](supabase/PORTERIA.md) para activación, permisos, uso de cámara, horarios y pruebas. Las notas de comportamiento siguen pendientes.
+Para activar este módulo, ejecutar únicamente `supabase/migrations/202611050003_gate_attendance.sql`. Consulta la [guía de portería](supabase/PORTERIA.md) para activación, permisos, uso de cámara, horarios y pruebas. El módulo de comportamiento se activa mediante su propia migración.
 
 ### Asistencia por clase
 
 Disponible en **Asistencia por clase** para docentes asignados, dirección/administración y consulta de apoderados. Incluye cursos, sesiones con aula y horario, lista fija de estudiantes, presentes/tardanzas/faltas/justificaciones, avances, cierre, reapertura y correcciones con motivo. El apoderado ve solo las filas de sus hijos en sesiones cerradas. La referencia de portería no marca ni justifica automáticamente la asistencia.
 
 Para activar, ejecutar únicamente `supabase/migrations/202611050004_class_attendance.sql`. La [guía de clases](supabase/CLASES.md) explica permisos y el recorrido de prueba. `npm run test:classes` valida el ciclo y los permisos en PostgreSQL embebido. El docente debe tener el rol y el aula asignados antes de crear sesiones.
+
+### Comportamiento
+
+Incluye periodos, rúbricas institucionales, reconocimientos, incidencias, seguimientos y consulta familiar. Los cuatro criterios institucionales y la nota final se consignan en escala de 0 a 20. La nota final la determina el evaluador aplicando la rúbrica; no hay promedio, descuentos ni sanciones automáticas. Publicar exige una rúbrica registrada y evaluación completa con sustento. Las familias no ven borradores ni anotaciones internas.
+
+Para activar, ejecutar únicamente `supabase/migrations/202611050005_behavior.sql`. Véase [la guía de comportamiento](supabase/COMPORTAMIENTO.md) para permisos, límites, publicación y preparación de una prueba. La automatización de la nota final queda pendiente de recibir una regla concreta aprobada por la institución. `npm run test:behavior` prueba el ciclo y la privacidad en PostgreSQL embebido.

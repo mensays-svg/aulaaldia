@@ -1,0 +1,9 @@
+export const behaviorCriteria:Record<string,string>={presentation:'Presentación personal',punctuality:'Puntualidad',coexistence:'Convivencia',responsibility:'Responsabilidad'}
+export const behaviorKinds:Record<string,string>={recognition:'Reconocimiento',incident:'Incidencia'}
+export const followupStates:Record<string,string>={pending:'Pendiente',in_progress:'En seguimiento',completed:'Cumplido'}
+export type BehaviorPeriod={id:string;name:string;academic_year:number;starts_on:string;ends_on:string}
+export type BehaviorRubric={id:string;name:string;reference:string;criteria:string}
+export type BehaviorEvaluation={id:string;rubric_id:string|null;presentation:number|null;punctuality:number|null;coexistence:number|null;responsibility:number|null;final_score:number|null;rationale:string|null;state:string;revision:number}
+export type BehaviorRecord={id:string;kind:string;criterion:string;occurred_at:string;description:string;student_version:string|null;location:string|null;published:boolean;family_summary:string|null;followups:{note:string;state:string;at:string}[]}
+export type BehaviorDetail={student_id:string;name:string;dni:string|null;classroom:string;period:BehaviorPeriod;can_grade:boolean;can_report:boolean;manager:boolean;evaluation:BehaviorEvaluation|null;records:BehaviorRecord[];gate:{first_entries:number;late_entries:number;unclassified_entries:number;early_exits:number};classes:{present:number;late:number;absent:number;justified:number}}
+export type BehaviorResult={message?:string;error?:string;detail?:BehaviorDetail}
