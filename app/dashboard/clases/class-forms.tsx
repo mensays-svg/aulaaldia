@@ -10,22 +10,22 @@ type Course={id:string;name:string}
 type Assignment={classroom_id:string;user_id:string;label:string}
 export function ClassSetup({school,user,manager,rooms,courses,assignments,date}:{school:string;user:string;manager:boolean;rooms:Room[];courses:Course[];assignments:Assignment[];date:string}){
  const router=useRouter(),[pending,startTransition]=useTransition()
- const [room,setRoom]=useState(''),[message,setMessage]=useState('')
+ const [room,setRoom]=useState(rooms.length===1?rooms[0].id:''),[message,setMessage]=useState('')
  const teachers=assignments.filter(a=>a.classroom_id===room)
  async function submit(form:HTMLFormElement,course:boolean){
   const data=new FormData(form);data.set('school',school)
   startTransition(async()=>{try{
    const result=course?await createCourse(data):await createSession(data)
    setMessage(result.error??result.message??'')
-   if(!result.error){form.reset();setRoom('');if(result.sessionId)router.push('/dashboard/clases?'+new URLSearchParams({school,date:String(data.get('date')),session:result.sessionId}));else router.refresh()}
+   if(!result.error){form.reset();setRoom(rooms.length===1?rooms[0].id:'');if(result.sessionId)router.push('/dashboard/clases?'+new URLSearchParams({school,date:String(data.get('date')),session:result.sessionId})+'#attendance');else router.refresh()}
   }catch{setMessage('No se pudo completar la solicitud. Revisa el listado antes de reintentar.')}})
  }
  return <section><h2>Preparar una clase</h2><p>La sesión toma la lista de estudiantes activos del aula en ese momento. No se marca asistencia automáticamente.</p>
   {manager&&<details><summary>Registrar curso</summary><form onSubmit={e=>{e.preventDefault();void submit(e.currentTarget,true)}}><label>Nombre del curso<input name="name" minLength={2} maxLength={100} required disabled={pending} placeholder="Ej.: Matemática"/></label><button disabled={pending}>Registrar curso</button></form></details>}
   <details><summary>Crear sesión de clase</summary><form className="grid-form" onSubmit={e=>{e.preventDefault();void submit(e.currentTarget,false)}}>
    <label>Aula<select name="classroom" value={room} onChange={e=>setRoom(e.target.value)} required disabled={pending}><option value="">Seleccionar aula</option>{rooms.map(r=><option key={r.id} value={r.id}>{r.label}</option>)}</select></label>
-   <label>Curso<select name="course" required disabled={pending}><option value="">Seleccionar curso</option>{courses.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-   {manager?<label>Docente responsable<select name="teacher" required disabled={pending||!room} key={room}><option value="">Seleccionar docente asignado</option>{teachers.map(t=><option key={t.user_id} value={t.user_id}>{t.label}</option>)}</select></label>:<input type="hidden" name="teacher" value={user}/>}
+   <label>Curso<select name="course" defaultValue={courses.length===1?courses[0].id:''} required disabled={pending}><option value="">Seleccionar curso</option>{courses.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+   {manager?<label>Docente responsable<select name="teacher" defaultValue={teachers.length===1?teachers[0].user_id:''} required disabled={pending||!room} key={room}><option value="">Seleccionar docente asignado</option>{teachers.map(t=><option key={t.user_id} value={t.user_id}>{t.label}</option>)}</select></label>:<input type="hidden" name="teacher" value={user}/>}
    <label>Fecha de la clase<input name="date" type="date" defaultValue={date} required disabled={pending}/></label>
    <label>Inicio (Lima)<input name="start" type="time" required disabled={pending}/></label><label>Fin (Lima)<input name="end" type="time" required disabled={pending}/></label>
    <label>Tema (opcional)<input name="topic" maxLength={160} disabled={pending}/></label><button disabled={pending||!courses.length||!rooms.length}>Crear sesión</button>
@@ -46,11 +46,12 @@ export function ClassRegister({school,initial}:{school:string;initial:ClassDetai
   if(result.detail){setDetail(result.detail);setMarks(initialMarks(result.detail));setDirty(false);setReason('')}
   if(!result.error)router.refresh()
  }
- function save(){
+ function save(publish=false){
   if(pending)return
+  if(publish&&marked!==detail.students.length){setMessage('Revisa las marcaciones pendientes antes de publicar.');return}
   if(Object.values(marks).some(mark=>!mark.status&&mark.note.trim())){setMessage('Selecciona un estado para cada estudiante que tenga una observación antes de guardar.');return}
   const payload=Object.entries(marks).filter(([,mark])=>mark.status).map(([student_id,mark])=>({student_id,...mark}))
-  startTransition(async()=>{try{accept(await saveAttendance(school,detail.id,detail.revision,payload,reason))}catch{setMessage('No se recibió la confirmación. Recarga la sesión para revisar lo guardado antes de reintentar.')}})
+  startTransition(async()=>{try{accept(await saveAttendance(school,detail.id,detail.revision,payload,reason,publish))}catch{setMessage('No se recibió la confirmación. Recarga la sesión para revisar lo guardado antes de reintentar.')}})
  }
  function changeState(state:string){
   if(pending||dirty)return
@@ -70,8 +71,8 @@ export function ClassRegister({school,initial}:{school:string;initial:ClassDetai
   {message&&<p className="notice" role="status">{message}</p>}
   <div className="table-scroll"><table className="class-register"><thead><tr><th>Estudiante</th><th>Portería</th><th>Asistencia a clase</th><th>Observación / justificación</th></tr></thead><tbody>{detail.students.map(s=><tr key={s.id}><td>{s.last_names}, {s.first_names}<br/>{s.dni??'Sin DNI'}</td><td>{s.gate_kind?<><strong>{movements[s.gate_kind]}</strong><br/>{s.gate_at&&formatGateTime(s.gate_at)}{s.gate_reason&&<p>{reasons[s.gate_reason]}{s.gate_expects_return?' · Retorno previsto':''}</p>}</>:'Sin movimiento registrado para esta referencia'}</td><td>{editable?<select aria-label={'Asistencia de '+s.last_names+' '+s.first_names} value={marks[s.id]?.status??''} disabled={pending} onChange={e=>{setMarks({...marks,[s.id]:{...marks[s.id],status:e.target.value}});setDirty(true)}}><option value="" disabled={!!s.status}>Pendiente</option>{Object.entries(classStatuses).map(([status,label])=><option value={status} key={status}>{label}</option>)}</select>:classStatuses[s.status??'']??'Pendiente'}</td><td>{editable?<textarea aria-label={'Observación de '+s.last_names+' '+s.first_names} rows={2} maxLength={500} value={marks[s.id]?.note??''} disabled={pending} onChange={e=>{setMarks({...marks,[s.id]:{...marks[s.id],note:e.target.value}});setDirty(true)}}/>:s.note??'—'}</td></tr>)}</tbody></table></div>
   {editable&&<><label>Motivo de corrección (si cambias una marcación ya guardada)<textarea value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} rows={2} disabled={pending}/></label><p>Las ausencias justificadas requieren una explicación en la fila del estudiante. No incluyas diagnósticos médicos.</p></>}
-  <div className="import-controls">{editable&&<><button disabled={pending||!marked} onClick={save}>{pending?'Procesando…':'Guardar asistencia'}</button><button className="secondary" disabled={pending||dirty||marked!==detail.students.length} onClick={()=>changeState('closed')}>Cerrar y publicar sesión</button></>}<button className="secondary" disabled={pending} onClick={reload}>Recargar sesión</button></div>
-  {editable&&dirty&&<p className="notice">Hay cambios sin guardar. Guarda antes de cerrar la sesión.</p>}
+  <div className="import-controls">{editable&&<><button disabled={pending||!detail.students.length||marked!==detail.students.length} onClick={()=>dirty?save(true):changeState('closed')}>{pending?'Procesando…':'Guardar y publicar asistencia'}</button><button className="secondary" disabled={pending||!marked} onClick={()=>save(false)}>Guardar borrador</button></>}<button className="secondary" disabled={pending} onClick={reload}>Recargar sesión</button></div>
+  {editable&&dirty&&<p className="notice">Hay cambios sin guardar. Puedes guardarlos y publicarlos en una sola acción, después de revisar la lista.</p>}
   {detail.state==='closed'&&detail.can_manage&&<details><summary>Reabrir sesión para corregir</summary><p>Se ocultará temporalmente a los apoderados hasta volver a cerrarla. Quedará constancia de la reapertura.</p><label>Motivo obligatorio<textarea value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} disabled={pending}/></label><button disabled={pending||!reason.trim()} onClick={()=>changeState('draft')}>Reabrir sesión</button></details>}
  </section>
 }

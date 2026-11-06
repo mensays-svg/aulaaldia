@@ -37,12 +37,19 @@ export async function createSession(form:FormData):Promise<ClassResult>{
  if(result.error)return{error:errorMessage(result.error)}
  revalidatePath('/dashboard/clases');return{sessionId:result.data,message:'Sesión creada con la lista de estudiantes activos del aula.'}
 }
-export async function saveAttendance(school:string,lesson:string,revision:number,marks:{student_id:string;status:string;note:string}[],correction:string):Promise<ClassResult>{
+export async function saveAttendance(school:string,lesson:string,revision:number,marks:{student_id:string;status:string;note:string}[],correction:string,publish=false):Promise<ClassResult>{
  const {valid,supabase}=await context(school)
- if(!valid||!validUuid(lesson)||!Number.isInteger(revision)||revision<0||!Array.isArray(marks)||marks.length<1||marks.length>1000||typeof correction!=='string'||correction.length>500)return{error:'Revisa los datos de la sesión.'}
+ if(typeof publish!=='boolean'||!valid||!validUuid(lesson)||!Number.isInteger(revision)||revision<0||!Array.isArray(marks)||marks.length<1||marks.length>1000||typeof correction!=='string'||correction.length>500)return{error:'Revisa los datos de la sesión.'}
  if(marks.some(m=>!m||!validUuid(m.student_id)||!Object.hasOwn(classStatuses,m.status)||typeof m.note!=='string'||m.note.length>500||(m.status==='justified'&&!m.note.trim())))return{error:'Revisa los estados. Las ausencias justificadas necesitan una explicación.'}
  const result=await supabase.rpc('save_class_attendance',{school,lesson,expected_revision:revision,marks,correction:correction.trim()||null})
  if(result.error)return{error:errorMessage(result.error)}
+ if(publish){
+  // Use exactly the revision returned by the save, never a later read that may include another editor's changes.
+  const closed=await supabase.rpc('change_class_session_state',{school,lesson,expected_revision:result.data,new_state:'closed',reason:null})
+  if(closed.error){revalidatePath('/dashboard/clases');const refreshed=await loadClass(school,lesson);return{...refreshed,error:'La asistencia quedó guardada como borrador, pero no se publicó. '+errorMessage(closed.error)}}
+  revalidatePath('/dashboard/clases');const refreshed=await loadClass(school,lesson)
+  return{...refreshed,message:'Asistencia guardada y publicada. Los apoderados ya pueden consultarla.'}
+ }
  revalidatePath('/dashboard/clases');const refreshed=await loadClass(school,lesson)
  return{...refreshed,message:'Asistencia guardada. Cierra la sesión al terminar para publicarla a los apoderados.'}
 }

@@ -28,7 +28,8 @@ export default async function ReportsPage({searchParams}:{searchParams:Promise<{
   const result=await request.order('last_names').order('id').limit(20);students=result.data??[];searchError=!!result.error
  }
  let report:StudentReport|undefined,error:string|undefined
- if(period&&params.student&&validUuid(params.student)){const result=await getStudentReport(school,params.student,period.id);report=result.report;error=result.error}
+ const selectedStudent=params.student??(!params.q&&students.length===1?students[0].id:undefined)
+ if(period&&selectedStudent&&validUuid(selectedStudent)){const result=await getStudentReport(school,selectedStudent,period.id);report=result.report;error=result.error}
  const pdf=report?'/dashboard/reportes/pdf?'+new URLSearchParams({school,student:report.student.id,period:report.period.id}):''
  const sections=report?buildReportSections(report):[]
  return <div className="workspace"><div className="report-controls">{back}<h1>Reportes por estudiante</h1>{roles.some(r=>['administrador','director'].includes(r))&&<p><Link className="import-link" href={'/dashboard/reportes/direccion?school='+school}>Reportes generales para dirección</Link></p>}<p>Asistencia al colegio, clases cerradas y comportamiento publicado, según tus permisos. Los apoderados solo pueden consultar a sus hijos vinculados.</p>

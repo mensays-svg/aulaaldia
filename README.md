@@ -113,3 +113,12 @@ Los porcentajes indican su base. Puntualidad a tiempo excluye los ingresos sin h
 La vista web de reportes agrupa el detalle en desplegables con conteos y controles **Abrir todo / Cerrar todo**. Las secciones vacías se reúnen en un bloque y las gráficas sin datos se sustituyen por un aviso compacto. Al consultar un reporte, sus filtros quedan plegados para dar prioridad al resultado. La impresión abre todo el detalle y después restaura su estado; el PDF descargable conserva su contenido completo.
 
 El PDF usa una ficha visual con cabecera institucional, tarjetas de indicadores, gráficas circulares para distribuciones de asistencia y barras de comportamiento. Las gráficas sin datos se reemplazan por un aviso; el caso individual sin registros de prueba cabe en una página y conserva las aclaraciones. Cuando hay registros, el detalle completo queda en un anexo con tablas y enlaces internos **Ver detalle / Volver al resumen**. El botón **Explorar reporte interactivo** abre la versión web protegida. Las gráficas del archivo PDF son estáticas; la navegación y el enlace sí son clicables.
+
+### Menos pasos en las tareas diarias
+
+- Asistencia: después de revisar las marcas, **Guardar y publicar asistencia** guarda y cierra en una acción. **Guardar borrador** sigue disponible. Se conserva el motivo obligatorio al corregir marcas, las justificaciones y el control de revisión. Si guardar funciona pero publicar falla, se informa que quedó un borrador; no se publica una revisión posterior de otro editor.
+- Preparación de clase: un aula, curso o docente asignado se selecciona automáticamente cuando es la única opción disponible. Al crear la sesión se abre directamente su registro de asistencia.
+- Reportes: **Descargar PDF** está en la fila del estudiante y utiliza el periodo vigente por defecto. Si solo hay un estudiante disponible según los permisos, se selecciona automáticamente en las descargas y al abrir Reportes sin una búsqueda.
+- Portería: después de confirmar un movimiento, el cursor regresa al campo de búsqueda y selecciona su texto para escribir el próximo DNI. La observación opcional queda plegada. Identidad, autorización y confirmación de cada movimiento se conservan.
+
+No requiere SQL adicional. Validación del guardado/publicación con cambios simultáneos: `npm run test:quick-attendance`; permisos y ciclo de clases: `npm run test:classes`.

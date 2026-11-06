@@ -5,7 +5,7 @@ import Icon from '@/app/components/ui-icon'
 type Period={id:string;name:string;academic_year:number;starts_on:string;ends_on:string}
 type Student={id:string;first_names:string;last_names:string;dni:string|null}
 export default function ReportDownloads({school,periods,students,manager,gateOnly,defaultPeriod,error}:{school:string;periods:Period[];students:Student[];manager:boolean;gateOnly:boolean;defaultPeriod:string;error:boolean}){
- const [selected,setSelected]=useState(defaultPeriod),[student,setStudent]=useState('')
+ const [selected,setSelected]=useState(defaultPeriod),[student,setStudent]=useState(students.length===1?students[0].id:'')
  const period=periods.find(p=>p.id===selected)??periods.find(p=>p.id===defaultPeriod)??periods[0]
  const individual='/dashboard/reportes?'+new URLSearchParams({school,...(period?{period:period.id}:{}),...(students.some(s=>s.id===student)?{student}:{})})
  const general='/dashboard/reportes/direccion?'+new URLSearchParams({school,...(period?{period:period.id,year:String(period.academic_year)}:{})})
