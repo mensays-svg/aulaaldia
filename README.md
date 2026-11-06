@@ -75,3 +75,11 @@ Para activar, ejecutar únicamente `supabase/migrations/202611050005_behavior.sq
 **Reportes** reúne asistencia al colegio, clases cerradas, conducta publicada y resúmenes de comportamiento comunicados a la familia por estudiante y periodo. Ofrece una descarga PDF real y una vista imprimible. Los apoderados solo acceden a sus hijos; el auxiliar conserva un alcance de portería y las clases del docente respetan sus asignaciones.
 
 Para activar, ejecutar únicamente `supabase/migrations/202611050006_student_reports.sql`. Consulta [la guía de reportes](supabase/REPORTES.md). `npm run test:reports` valida permisos y contenido en PostgreSQL embebido; `npm run test:report-pdf` valida generación y paginación con datos ficticios. Las fuentes locales y su licencia están en `assets/fonts` y se incluyen en el despliegue mediante `next.config.ts`.
+
+### Reportes generales para dirección
+
+Disponible para Director y Administrador en **Reportes → Reportes generales para dirección**. Filtra año, periodo, nivel, grado, sección y estudiantes activos/inactivos. Incluye resúmenes por aula actual, pendientes de cierre, asistencia y conducta publicada, además de detalle por estudiante y PDF institucional horizontal.
+
+Para activar, ejecutar únicamente `supabase/migrations/202611050007_management_reports.sql`. Consulta [la guía de dirección](supabase/DIRECCION.md), especialmente la diferencia entre agrupación por aula actual y matrícula histórica. Las notas pendientes no se convierten en cero ni modifican el promedio; el promedio descriptivo no cambia ninguna evaluación.
+
+Pruebas: `npm run test:management-reports`, `npm run test:management-pdf`, `npm run test:report-pdf` y `npm run build`.

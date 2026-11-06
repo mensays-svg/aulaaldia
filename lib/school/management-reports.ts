@@ -1,0 +1,33 @@
+import type {ReportSection} from './reports'
+export type ManagementFilters={year:number;level:string|null;grade:string|null;section:string|null;state:string}
+type AttendanceCounts={first_entries:number;gate_late:number;early_exits:number;class_marks:number;present:number;class_late:number;absent:number;justified:number;recognitions:number;incidents:number}
+type BehaviorCounts={published_behavior:number;missing_behavior:number;failed_behavior:number;average_behavior:number|null}
+export type ManagementPupil=AttendanceCounts&{id:string;name:string;dni:string|null;active:boolean;classroom_id:string;classroom:string;level:string;grade:string;section:string;movements:number;on_time:number;unclassified:number;presentation:number|null;punctuality:number|null;coexistence:number|null;responsibility:number|null;final_score:number|null}
+export type ManagementRoom=AttendanceCounts&BehaviorCounts&{id:string;classroom:string;level:string;grade:string;section:string;students:number;active:number;closed_sessions:number;draft_started:number;upcoming_sessions:number}
+export type ManagementReport={issued_at:string;school:{id:string;name:string};period:{id:string;name:string;academic_year:number;starts_on:string;ends_on:string};filters:ManagementFilters;summary:AttendanceCounts&BehaviorCounts&{students:number;active:number;on_time:number;unclassified:number;students_without_class_marks:number;passed_behavior:number};sessions:{classrooms:number;closed:number;draft_started:number;upcoming:number};classrooms:ManagementRoom[];students:ManagementPupil[]}
+const number=(value:number|null)=>value===null?'Sin publicar':new Intl.NumberFormat('es-PE',{maximumFractionDigits:2}).format(value)
+export function managementFilterLabel(filters:ManagementFilters):string{
+ const state=filters.state==='active'?'Solo activos':filters.state==='inactive'?'Solo inactivos':'Activos e inactivos'
+ return `${filters.year} · ${filters.level??'Todos los niveles'} · ${filters.grade?'Grado '+filters.grade:'Todos los grados'} · ${filters.section?'Sección '+filters.section:'Todas las secciones'} · ${state}`
+}
+export function buildManagementSections(report:ManagementReport):ReportSection[]{
+ const s=report.summary
+ return[
+  {heading:'Resumen de la selección',paragraphs:[`${s.students} estudiantes en ${report.sessions.classrooms} aulas seleccionadas; ${s.active} activos y ${s.students-s.active} inactivos.`,
+   `Portería: ${s.first_entries} primeros ingresos, ${s.gate_late} tardanzas, ${s.on_time} a tiempo, ${s.unclassified} sin horario y ${s.early_exits} salidas anticipadas.`,
+   `Clases cerradas: ${s.class_marks} marcaciones; ${s.present} presentes, ${s.class_late} tardanzas, ${s.absent} faltas y ${s.justified} ausencias justificadas. ${s.students_without_class_marks} estudiantes no tienen marcaciones de clase publicadas en este periodo.`,
+   `Sesiones de las aulas seleccionadas: ${report.sessions.closed} cerradas, ${report.sessions.draft_started} pendientes de cierre que ya comenzaron y ${report.sessions.upcoming} programadas que aún no comienzan.`,
+   `Conducta: ${s.published_behavior} evaluaciones publicadas, ${s.missing_behavior} sin evaluación publicada, ${s.passed_behavior} con nota de 11 o más y ${s.failed_behavior} con nota menor a 11. Promedio de notas publicadas: ${s.average_behavior===null?'Sin evaluaciones publicadas':number(s.average_behavior)+' / 20'}.`,
+   `Registros comunicados a las familias: ${s.recognitions} reconocimientos y ${s.incidents} incidencias.`]},
+  {heading:'Resumen por aula actual',columns:['Aula','Estudiantes','Tardanzas colegio','Faltas de clase','Conducta publicada / estudiantes','Promedio conducta'],weights:[2.3,.8,1,1,1.3,1],rows:report.classrooms.map(r=>[r.classroom,String(r.students),String(r.gate_late),String(r.absent),`${r.published_behavior} / ${r.students}`,r.average_behavior===null?'Sin publicar':number(r.average_behavior)+' / 20']),empty:'No hay aulas que coincidan con los filtros.'},
+  {heading:'Seguimiento de sesiones por aula',columns:['Aula','Cerradas','Pendientes de cierre (ya iniciadas)','Programadas futuras'],weights:[2.8,1,1.5,1.2],rows:report.classrooms.map(r=>[r.classroom,String(r.closed_sessions),String(r.draft_started),String(r.upcoming_sessions)]),empty:'No hay aulas para mostrar.'},
+  {heading:'Asistencia al colegio por estudiante',columns:['Estudiante / DNI','Aula actual / estado','Primeros ingresos','Tardanzas colegio','Sin horario','Salidas anticipadas'],weights:[2.3,2.2,1,1,1,1],rows:report.students.map(p=>[p.name+'\n'+(p.dni??'Sin DNI'),p.classroom+'\n'+(p.active?'Activo':'Inactivo'),String(p.first_entries),String(p.gate_late),String(p.unclassified),String(p.early_exits)]),empty:'No hay estudiantes que coincidan con los filtros.'},
+  {heading:'Asistencia a clases cerradas por estudiante',columns:['Estudiante','Aula actual','Presentes','Tardanzas clase','Faltas clase','Justificadas'],weights:[2.5,2.3,.8,1,1,1],rows:report.students.map(p=>[p.name,p.classroom,String(p.present),String(p.class_late),String(p.absent),String(p.justified)]),empty:'No hay estudiantes que coincidan con los filtros.'},
+  {heading:'Conducta publicada por estudiante · 0 a 20',columns:['Estudiante / aula actual','Presentación personal','Puntualidad','Convivencia','Responsabilidad','Nota final'],weights:[3,1.3,1,1,1.4,1.1],rows:report.students.map(p=>[p.name+'\n'+p.classroom,number(p.presentation),number(p.punctuality),number(p.coexistence),number(p.responsibility),number(p.final_score)]),empty:'No hay estudiantes que coincidan con los filtros.'},
+  {heading:'Criterios de lectura',paragraphs:['La agrupación usa el aula y estado actuales de cada estudiante. Incluye sus marcaciones del periodo, aunque una sesión histórica corresponda a otra aula. No equivale a un padrón histórico de matrícula.',
+   'Las sesiones pendientes corresponden a las aulas seleccionadas y se cuentan una vez por sesión, no por estudiante. Las tardanzas de portería y de clase se muestran separadas y no se suman para aplicar una penalización.',
+   'Los estudiantes sin nota publicada no reciben cero y no entran en el promedio. El promedio institucional se calcula sobre cada evaluación final publicada, no como promedio de promedios de aulas. Es un indicador descriptivo: no cambia la nota de ningún estudiante.',
+   'No se deducen faltas por días sin ingreso. Los borradores de asistencia y conducta, las descripciones internas y las anotaciones reservadas no forman parte de este reporte.',
+   'Reporte de uso institucional para dirección y administración. Refleja los datos disponibles al emitirlo; no sustituye certificados oficiales ni actas firmadas.']},
+ ]
+}

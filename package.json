@@ -15,7 +15,9 @@
     "test:classes": "node scripts/class-attendance.mjs",
     "test:behavior": "node scripts/behavior.mjs",
     "test:reports": "node scripts/reports.mjs",
-    "test:report-pdf": "node --experimental-strip-types scripts/report-pdf.mjs"
+    "test:report-pdf": "node --experimental-strip-types scripts/report-pdf.mjs",
+    "test:management-reports": "node scripts/management-reports.mjs",
+    "test:management-pdf": "node --experimental-strip-types scripts/management-pdf.mjs"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

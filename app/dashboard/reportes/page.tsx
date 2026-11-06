@@ -8,7 +8,7 @@ import PrintReport from './print-button'
 export const dynamic='force-dynamic'
 export default async function ReportsPage({searchParams}:{searchParams:Promise<{school?:string;student?:string;period?:string;q?:string}>}){
  const params=await searchParams
- const {supabase,school,setupError}=await schoolContext(params.school)
+ const {supabase,school,roles,setupError}=await schoolContext(params.school)
  const back=<Link href={school?'/dashboard?school='+school:'/dashboard'}>← Volver al panel</Link>
  if(setupError||!school)return <>{back}<h1>Reportes</h1><p className="notice">Tu cuenta debe estar vinculada a una institución.</p></>
  const periodsResult=await supabase.from('behavior_periods').select('id,name,academic_year,starts_on,ends_on').eq('institution_id',school).order('academic_year',{ascending:false}).order('starts_on',{ascending:false}).limit(1000)
@@ -28,7 +28,7 @@ export default async function ReportsPage({searchParams}:{searchParams:Promise<{
  if(period&&params.student&&validUuid(params.student)){const result=await getStudentReport(school,params.student,period.id);report=result.report;error=result.error}
  const pdf=report?'/dashboard/reportes/pdf?'+new URLSearchParams({school,student:report.student.id,period:report.period.id}):''
  const sections=report?buildReportSections(report):[]
- return <div className="workspace"><div className="report-controls">{back}<h1>Reportes por estudiante</h1><p>Asistencia al colegio, clases cerradas y comportamiento publicado, según tus permisos. Los apoderados solo pueden consultar a sus hijos vinculados.</p>
+ return <div className="workspace"><div className="report-controls">{back}<h1>Reportes por estudiante</h1>{roles.some(r=>['administrador','director'].includes(r))&&<p><Link className="import-link" href={'/dashboard/reportes/direccion?school='+school}>Reportes generales para dirección</Link></p>}<p>Asistencia al colegio, clases cerradas y comportamiento publicado, según tus permisos. Los apoderados solo pueden consultar a sus hijos vinculados.</p>
  {!period?<p className="notice">Dirección debe crear un periodo en Comportamiento para delimitar las fechas del reporte.</p>:<section><h2>Elegir estudiante y periodo</h2><form method="get" className="grid-form"><input name="school" value={school} type="hidden"/><label>Periodo<select name="period" defaultValue={period.id}>{periods.map(p=><option key={p.id} value={p.id}>{p.academic_year} · {p.name}</option>)}</select></label><label>DNI, apellidos o nombres<input name="q" defaultValue={params.q?.slice(0,120)??''} maxLength={120}/></label><button>Buscar</button></form>{searchError?<p role="alert">No se pudieron cargar los estudiantes.</p>:<><p>Hasta 20 coincidencias. Afina la búsqueda si es necesario.</p><ul className="student-links">{students.map(s=><li key={s.id}><Link href={'/dashboard/reportes?'+new URLSearchParams({school,student:s.id,period:period.id,q:params.q?.slice(0,120)??''})+'#student-report'}>{s.last_names}, {s.first_names} · {s.dni??'Sin DNI'}</Link></li>)}</ul>{!students.length&&<p>No hay estudiantes para mostrar según tus permisos.</p>}</>}</section>}
  {error&&<p role="alert" className="notice">{error}</p>}
  {report&&<div className="import-controls"><a className="import-link" href={pdf}>Descargar PDF</a><PrintReport/><Link href={'/dashboard/reportes?'+new URLSearchParams({school,student:report.student.id,period:report.period.id})}>Actualizar reporte</Link></div>}</div>

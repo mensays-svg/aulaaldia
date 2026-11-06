@@ -29,7 +29,7 @@ Las notas publicadas mantienen la rúbrica y referencia institucional de la eval
 
 El reporte no inventa faltas por días sin ingreso ni agrupa tardanzas de colegio y clases como una penalización. Los días sin registros pueden tener distintas causas; no existe todavía un calendario escolar para determinar ausencias de portería.
 
-No es un certificado oficial ni incorpora firmas digitales o envío por correo/WhatsApp. Reportes agregados de aulas, exportación Excel y comparativos institucionales quedan fuera de esta entrega.
+No es un certificado oficial ni incorpora firmas digitales o envío por correo/WhatsApp. Los reportes agregados de dirección ya están disponibles en [su propio módulo](DIRECCION.md). La exportación Excel y los comparativos entre periodos quedan fuera de esta entrega.
 
 ## Datos completos y PDF
 

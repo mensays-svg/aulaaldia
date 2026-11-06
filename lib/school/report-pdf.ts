@@ -6,12 +6,13 @@ import type {StudentReport,ReportSection} from './reports'
 
 const regularBytes=()=>readFile(join(process.cwd(),'assets/fonts/DejaVuSans.ttf'))
 const boldBytes=()=>readFile(join(process.cwd(),'assets/fonts/DejaVuSans-Bold.ttf'))
-export async function renderReportPdf(report:StudentReport,sections:ReportSection[]):Promise<Uint8Array>{
+export type ReportPdfHeader={schoolName:string;documentTitle:string;title:string;context:string;subject:string;lines:string[];issuedAt:string;landscape?:boolean}
+export async function renderDocumentPdf(info:ReportPdfHeader,sections:ReportSection[]):Promise<Uint8Array>{
  const pdf=await PDFDocument.create();pdf.registerFontkit(fontkit)
  const [regular,bold]=await Promise.all([regularBytes().then(bytes=>pdf.embedFont(bytes,{subset:true})),boldBytes().then(bytes=>pdf.embedFont(bytes,{subset:true}))])
- pdf.setTitle('Reporte individual · '+report.student.name)
- pdf.setAuthor(report.school.name);pdf.setSubject(report.period.name);pdf.setCreator('Aula al Día')
- const width=595.28,height=841.89,margin=42,bottom=46,lineHeight=13,fontSize=9
+ pdf.setTitle(info.documentTitle)
+ pdf.setAuthor(info.schoolName);pdf.setSubject(info.subject);pdf.setCreator('Aula al Día')
+ const width=info.landscape?841.89:595.28,height=info.landscape?595.28:841.89,margin=42,bottom=46,lineHeight=13,fontSize=9
  const ink=rgb(.09,.17,.27),muted=rgb(.3,.36,.43),border=rgb(.78,.82,.88),shade=rgb(.94,.96,.98)
  const boldCharacters=new Set(bold.getCharacterSet())
  const supported=new Set(regular.getCharacterSet().filter(char=>boldCharacters.has(char)))
@@ -41,9 +42,9 @@ export async function renderReportPdf(report:StudentReport,sections:ReportSectio
  function drawLine(text:string,x:number,at:number,font=regular,size=fontSize,color=ink){page.drawText(clean(text),{x,y:at,font,size,color})}
  function newPage(){
   page=pdf.addPage([width,height]);y=height-margin
-  const schoolLines=wrap(report.school.name,width-margin*2,bold,11)
+  const schoolLines=wrap(info.schoolName,width-margin*2,bold,11)
   for(const text of schoolLines){drawLine(text,margin,y,bold,11);y-=15}
-  for(const text of wrap(report.student.name+' · '+report.period.name,width-margin*2,regular,8)){drawLine(text,margin,y,regular,8,muted);y-=12}
+  for(const text of wrap(info.context,width-margin*2,regular,8)){drawLine(text,margin,y,regular,8,muted);y-=12}
   page.drawLine({start:{x:margin,y:y-3},end:{x:width-margin,y:y-3},thickness:.5,color:border});y-=20
  }
  function paragraph(text:string,font=regular,size=fontSize){
@@ -55,11 +56,9 @@ export async function renderReportPdf(report:StudentReport,sections:ReportSectio
  }
  function heading(text:string){if(y<bottom+50)newPage();y-=6;paragraph(text,bold,12);header=text}
  newPage()
- paragraph('REPORTE INDIVIDUAL DE SEGUIMIENTO',bold,14)
- paragraph('Estudiante: '+report.student.name)
- paragraph('DNI: '+(report.student.dni??'Sin DNI')+' · Aula actual: '+report.student.classroom)
- paragraph('Periodo: '+report.period.name+' · '+report.period.starts_on.split('-').reverse().join('/')+' al '+report.period.ends_on.split('-').reverse().join('/'))
- const issued=new Intl.DateTimeFormat('es-PE',{timeZone:'America/Lima',dateStyle:'short',timeStyle:'short'}).format(new Date(report.issued_at))
+ paragraph(info.title,bold,14)
+ for(const line of info.lines)paragraph(line)
+ const issued=new Intl.DateTimeFormat('es-PE',{timeZone:'America/Lima',dateStyle:'short',timeStyle:'short'}).format(new Date(info.issuedAt))
  paragraph('Emitido: '+issued+' (hora de Lima).')
  for(const section of sections){
   heading(section.heading)
@@ -100,4 +99,12 @@ export async function renderReportPdf(report:StudentReport,sections:ReportSectio
  const pages=pdf.getPages()
  pages.forEach((p,index)=>{p.drawText(`Aula al Día · ${index+1}/${pages.length}`,{x:margin,y:25,font:regular,size:8,color:muted})})
  return pdf.save()
+}
+
+export async function renderReportPdf(report:StudentReport,sections:ReportSection[]):Promise<Uint8Array>{
+ return renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte individual · '+report.student.name,title:'REPORTE INDIVIDUAL DE SEGUIMIENTO',context:report.student.name+' · '+report.period.name,subject:report.period.name,issuedAt:report.issued_at,lines:[
+  'Estudiante: '+report.student.name,
+  'DNI: '+(report.student.dni??'Sin DNI')+' · Aula actual: '+report.student.classroom,
+  'Periodo: '+report.period.name+' · '+report.period.starts_on.split('-').reverse().join('/')+' al '+report.period.ends_on.split('-').reverse().join('/'),
+ ]},sections)
 }
