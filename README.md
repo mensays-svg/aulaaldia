@@ -89,3 +89,9 @@ Pruebas: `npm run test:management-reports`, `npm run test:management-pdf`, `npm 
 **Matrículas** permite a Director y Administrador preparar el siguiente año, activar la matrícula en su año, cambiar aula/sección, registrar retiros y reingresos. Conserva el mismo estudiante, DNI, vínculos familiares, QR y registros educativos. La preparación por aula admite vista previa y hasta 500 estudiantes en una transacción; requiere autorización institucional y no decide promociones automáticamente.
 
 Si ya instalaste las siete migraciones anteriores, ejecuta **solo** `supabase/migrations/202611050008_enrollment_history.sql`. No repitas scripts anteriores. Lee [la guía de matrículas](supabase/MATRICULAS.md) para el recorrido de prueba, los permisos y las limitaciones del padrón inicial. Pruebas: `npm run test:enrollments`, `npm run test:report-pdf`, `npm run test:management-pdf` y `npm run build`.
+
+### Recuperar y cambiar contraseña
+
+En `/login` aparece **¿Olvidaste tu contraseña?** y en el panel **Cambiar contraseña**. La recuperación verifica un enlace de un solo uso al pulsar Continuar y permite establecer la nueva contraseña, incluso sin vínculo escolar. El cambio exige sesión validada en el servidor y confirmación de contraseña; al guardar, solicita cerrar sesiones y vuelve al login.
+
+**Configuración necesaria:** guardar el enlace de recuperación en la plantilla Supabase **Emails → Reset password**, siguiendo [la guía de recuperación](supabase/RECUPERAR_ACCESO.md). No requiere SQL. Pruebas: `npm run test:password` (auth simulada, sin correo real), `npm run build` y recorrido real de correo documentado.

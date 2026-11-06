@@ -28,4 +28,4 @@ export async function proxy(request: NextRequest) {
   }
   return response
 }
-export const config = { matcher: ['/dashboard/:path*', '/login', '/auth/:path*'] }
+export const config = { matcher: ['/dashboard/:path*', '/login', '/recuperar/:path*', '/auth/:path*'] }

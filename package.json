@@ -18,7 +18,8 @@
     "test:report-pdf": "node --experimental-strip-types scripts/report-pdf.mjs",
     "test:management-reports": "node scripts/management-reports.mjs",
     "test:management-pdf": "node --experimental-strip-types scripts/management-pdf.mjs",
-    "test:enrollments": "node scripts/enrollments.mjs"
+    "test:enrollments": "node scripts/enrollments.mjs",
+    "test:password": "node --experimental-strip-types scripts/password-recovery.mjs"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",
