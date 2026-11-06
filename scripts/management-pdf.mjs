@@ -1,3 +1,4 @@
+import {managementAnalytics} from '../lib/school/report-analytics.ts'
 import assert from 'node:assert/strict'
 import {writeFileSync} from 'node:fs'
 import {PDFDocument} from 'pdf-lib'
@@ -13,6 +14,13 @@ const classrooms=Array.from({length:6},(_,i)=>{
 })
 const report={issued_at:'2026-11-06T02:00:00Z',school:{id:'school',name:'I.E. Ficticia de Pruebas'},period:{id:'period',name:'Periodo de prueba',academic_year:2026,starts_on:'2026-01-01',ends_on:'2026-12-31'},filters:{year:2026,level:'Secundaria',grade:null,section:null,state:'all'},summary:{students:120,active:119,first_entries:120,gate_late:120,on_time:0,unclassified:0,early_exits:0,class_marks:240,present:120,class_late:120,absent:0,justified:0,students_without_class_marks:0,published_behavior:119,missing_behavior:1,passed_behavior:118,failed_behavior:1,average_behavior:15.87,recognitions:120,incidents:0},sessions:{classrooms:6,closed:12,draft_started:6,upcoming:0},classrooms,students}
 let checks=0
+const analytics=managementAnalytics(report)
+assert.equal(analytics.charts.find(c=>c.title.startsWith('Cobertura')).data[1].value,1);checks++
+assert.ok(Math.abs(analytics.charts.find(c=>c.maximum===20).data.at(-1).value-(118*16/119))<.00001);checks++
+const none=managementAnalytics({...report,students:[],summary:{...report.summary,students:0,published_behavior:0,average_behavior:null}})
+assert.equal(none.metrics.find(m=>m.label==='Conducta publicada').value,'Sin datos');checks++
+assert.ok(none.charts.find(c=>c.maximum===20).data.every(d=>d.value===null));checks++
+
 const sections=buildManagementSections(report)
 const behavior=sections.find(s=>s.heading.startsWith('Conducta publicada'))
 assert.equal(behavior.rows[0].at(-1),'0');checks++
@@ -25,7 +33,7 @@ const historicalSections=buildManagementSections(historical)
 assert.ok(historicalSections.some(s=>s.heading==='Resumen por aula del periodo'));checks++
 assert.ok(historicalSections.at(-1).paragraphs.some(p=>p.includes('2 matrículas')&&p.includes('desconocida')));checks++
 assert.ok(managementFilterLabel(report.filters,true).includes('estados de matrícula'));checks++
-const bytes=await renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte institucional de prueba',title:'REPORTE GENERAL PARA DIRECCIÓN',context:managementFilterLabel(report.filters),subject:report.period.name,issuedAt:report.issued_at,landscape:true,lines:[report.period.name,managementFilterLabel(report.filters),'Datos ficticios.']},sections)
+const bytes=await renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte institucional de prueba',title:'REPORTE GENERAL PARA DIRECCIÓN',context:managementFilterLabel(report.filters),subject:report.period.name,issuedAt:report.issued_at,landscape:true,analytics:managementAnalytics(report),viewUrl:'https://aulaaldia.vercel.app/dashboard/reportes/direccion',lines:[report.period.name,managementFilterLabel(report.filters),'Datos ficticios.']},sections)
 const document=await PDFDocument.load(bytes)
 assert.ok(document.getPageCount()>5);checks++
 assert.ok(document.getPages()[0].getWidth()>document.getPages()[0].getHeight());checks++

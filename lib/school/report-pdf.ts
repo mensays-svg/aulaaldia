@@ -1,12 +1,13 @@
-import {PDFDocument,rgb,type PDFFont,type PDFPage} from 'pdf-lib'
+import {PDFDocument,rgb,type PDFFont,type PDFPage,PDFString} from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
 import {readFile} from 'node:fs/promises'
 import {join} from 'node:path'
 import type {StudentReport,ReportSection} from './reports'
+import {individualAnalytics,chartValue,type ReportAnalytics} from './report-analytics.ts'
 
 const regularBytes=()=>readFile(join(process.cwd(),'assets/fonts/DejaVuSans.ttf'))
 const boldBytes=()=>readFile(join(process.cwd(),'assets/fonts/DejaVuSans-Bold.ttf'))
-export type ReportPdfHeader={schoolName:string;documentTitle:string;title:string;context:string;subject:string;lines:string[];issuedAt:string;landscape?:boolean}
+export type ReportPdfHeader={schoolName:string;documentTitle:string;title:string;context:string;subject:string;lines:string[];issuedAt:string;landscape?:boolean;analytics?:ReportAnalytics;viewUrl?:string}
 export async function renderDocumentPdf(info:ReportPdfHeader,sections:ReportSection[]):Promise<Uint8Array>{
  const pdf=await PDFDocument.create();pdf.registerFontkit(fontkit)
  const [regular,bold]=await Promise.all([regularBytes().then(bytes=>pdf.embedFont(bytes,{subset:true})),boldBytes().then(bytes=>pdf.embedFont(bytes,{subset:true}))])
@@ -16,7 +17,8 @@ export async function renderDocumentPdf(info:ReportPdfHeader,sections:ReportSect
  const ink=rgb(.09,.17,.27),muted=rgb(.3,.36,.43),border=rgb(.78,.82,.88),shade=rgb(.94,.96,.98)
  const boldCharacters=new Set(bold.getCharacterSet())
  const supported=new Set(regular.getCharacterSet().filter(char=>boldCharacters.has(char)))
- let escaped=false,page:PDFPage,y=0,header=''
+ let escaped=false,y=0,header=''
+ let page!:PDFPage
  function clean(input:string):string{
   return Array.from(String(input).replace(/\r\n?/g,'\n').replace(/\t/g,' ').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,' ')).map(char=>{
    if(char==='\n'||supported.has(char.codePointAt(0)!))return char
@@ -60,6 +62,44 @@ export async function renderDocumentPdf(info:ReportPdfHeader,sections:ReportSect
  for(const line of info.lines)paragraph(line)
  const issued=new Intl.DateTimeFormat('es-PE',{timeZone:'America/Lima',dateStyle:'short',timeStyle:'short'}).format(new Date(info.issuedAt))
  paragraph('Emitido: '+issued+' (hora de Lima).')
+ if(info.viewUrl&&/^https?:\/\//.test(info.viewUrl)){
+  if(y<bottom+25)newPage()
+  const linkY=y
+  drawLine('Abrir versión interactiva en Aula al Día (requiere sesión)',margin,linkY,bold,9,rgb(.03,.5,.47))
+  const link=pdf.context.register(pdf.context.obj({Type:'Annot',Subtype:'Link',Rect:[margin,linkY-3,width-margin,linkY+12],Border:[0,0,0],A:{Type:'Action',S:'URI',URI:PDFString.of(info.viewUrl)}}))
+  page.node.addAnnot(link);y-=25
+ }
+ if(info.analytics){
+  heading('Resumen visual y estadísticas')
+  const cardWidth=(width-margin*2-16)/2
+  for(let i=0;i<info.analytics.metrics.length;i+=2){
+   const pair=info.analytics.metrics.slice(i,i+2)
+   const notes=pair.map(m=>wrap(m.note,cardWidth-20,regular,8))
+   const cardHeight=60+Math.max(...notes.map(n=>n.length))*11
+   if(y-cardHeight<bottom)newPage()
+   pair.forEach((m,j)=>{const x=margin+j*(cardWidth+16);page.drawRectangle({x,y:y-cardHeight,width:cardWidth,height:cardHeight,color:shade,borderColor:border,borderWidth:.5});drawLine(m.label,x+10,y-17,bold,9);drawLine(m.value,x+10,y-41,bold,17);notes[j].forEach((line,n)=>drawLine(line,x+10,y-57-n*11,regular,8,muted))})
+   y-=cardHeight+12
+  }
+  for(const chart of info.analytics.charts){
+   const available=width-margin*2,labelWidth=available*.43,valueWidth=100,trackWidth=available-labelWidth-valueWidth-12
+   const labelLines=chart.data.map(d=>wrap(d.label,labelWidth-8,regular,8))
+   const rowHeights=labelLines.map(lines=>Math.max(29,lines.length*11+10))
+   const chartHeight=48+rowHeights.reduce((a,b)=>a+b,0)
+   if(y-chartHeight<bottom)newPage()
+   heading(chart.title)
+   const maximum=chart.maximum??Math.max(1,...chart.data.map(d=>d.value??0))
+   chart.data.forEach((d,i)=>{
+    const at=y-10;labelLines[i].forEach((line,n)=>drawLine(line,margin,at-n*11,regular,8))
+    page.drawRectangle({x:margin+labelWidth,y:at-2,width:trackWidth,height:9,color:shade})
+    if(d.value!==null&&d.value>0){const hex=d.color.slice(1);page.drawRectangle({x:margin+labelWidth,y:at-2,width:trackWidth*Math.max(0,Math.min(1,d.value/maximum)),height:9,color:rgb(parseInt(hex.slice(0,2),16)/255,parseInt(hex.slice(2,4),16)/255,parseInt(hex.slice(4,6),16)/255)})}
+    drawLine(chartValue(chart,d.value),margin+labelWidth+trackWidth+10,at,regular,8)
+    y-=rowHeights[i]
+   })
+   paragraph('Escala: 0–'+maximum+' · '+chart.unit,regular,8)
+   paragraph(chart.note,regular,8)
+   if(!chart.maximum&&chart.data.every(d=>(d.value??0)===0))paragraph('No hay registros disponibles para graficar en este periodo.',regular,8)
+  }
+ }
  for(const section of sections){
   heading(section.heading)
   if(section.columns&&section.rows?.length){
@@ -101,8 +141,8 @@ export async function renderDocumentPdf(info:ReportPdfHeader,sections:ReportSect
  return pdf.save()
 }
 
-export async function renderReportPdf(report:StudentReport,sections:ReportSection[]):Promise<Uint8Array>{
- return renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte individual · '+report.student.name,title:'REPORTE INDIVIDUAL DE SEGUIMIENTO',context:report.student.name+' · '+report.period.name,subject:report.period.name,issuedAt:report.issued_at,lines:[
+export async function renderReportPdf(report:StudentReport,sections:ReportSection[],viewUrl?:string):Promise<Uint8Array>{
+ return renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte individual · '+report.student.name,title:'REPORTE INDIVIDUAL DE SEGUIMIENTO',analytics:individualAnalytics(report),viewUrl,context:report.student.name+' · '+report.period.name,subject:report.period.name,issuedAt:report.issued_at,lines:[
   'Estudiante: '+report.student.name,
   'DNI: '+(report.student.dni??'Sin DNI')+' · Aula actual: '+report.student.classroom,
   ...(report.student.period_classroom!==undefined?['Aula del periodo: '+(report.student.period_classroom??'Sin matrícula registrada para el periodo')+(report.student.enrollment_dates_unknown?' · Fecha inicial no disponible.':'')]:[]),

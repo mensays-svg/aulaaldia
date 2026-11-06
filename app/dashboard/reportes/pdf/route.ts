@@ -10,7 +10,8 @@ export async function GET(request:NextRequest){
  const result=await getStudentReport(params.get('school')??'',params.get('student')??'',params.get('period')??'')
  if(!result.report)return Response.json({error:result.error},{status:result.status,headers})
  try{
-  const bytes=await renderReportPdf(result.report,buildReportSections(result.report))
+  const viewUrl=new URL(request.url);viewUrl.pathname='/dashboard/reportes'
+  const bytes=await renderReportPdf(result.report,buildReportSections(result.report),viewUrl.toString())
   return new Response(new Uint8Array(bytes),{headers:{...headers,'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="reporte-estudiante-${result.report.period.academic_year}.pdf"`}})
  }catch{return Response.json({error:'No se pudo crear el PDF. Puedes abrir el reporte web y usar Imprimir / Guardar como PDF.'},{status:503,headers})}
 }

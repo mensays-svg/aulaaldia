@@ -1,3 +1,5 @@
+import {managementAnalytics} from '@/lib/school/report-analytics'
+import ReportCharts from '../report-charts'
 import Link from 'next/link'
 import {schoolContext} from '@/lib/school/context'
 import {limaDate} from '@/lib/school/gate'
@@ -34,7 +36,7 @@ export default async function ManagementReportsPage({searchParams}:{searchParams
  {error&&<p role="alert" className="notice">{error}</p>}
  {report&&<div className="import-controls"><a className="import-link" href={'/dashboard/reportes/direccion/pdf?'+exportParams}>Descargar PDF institucional</a><PrintReport/></div>}</div>
  {report&&<article className="student-report management-report"><header><p className="eyebrow">AULA AL DÍA · USO INSTITUCIONAL</p><h1>{report.school.name}</h1><h2>Reporte general de asistencia y comportamiento</h2><p>{report.period.name} · {reportDate(report.period.starts_on)} al {reportDate(report.period.ends_on)}</p><p><strong>{managementFilterLabel(report.filters,report.cohort_basis==='enrollment_history')}</strong></p><p>Emitido: {reportTime(report.issued_at)} (hora de Lima).</p></header>
- {sections.map((section,index)=><section key={index}><h2>{section.heading}</h2>{section.columns&&<>{section.rows?.length?<div className="table-scroll"><table><thead><tr>{section.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{section.rows.map((row,i)=><tr key={i}>{row.map((value,j)=><td className="preserve-lines" key={j}>{value}</td>)}</tr>)}</tbody></table></div>:<p>{section.empty}</p>}</>}{section.paragraphs?.map((p,i)=><p key={i} className="preserve-lines">{p}</p>)}</section>)}
+ <ReportCharts analytics={managementAnalytics(report)}/>{sections.map((section,index)=><section key={index}><h2>{section.heading}</h2>{section.columns&&<>{section.rows?.length?<div className="table-scroll"><table><thead><tr>{section.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{section.rows.map((row,i)=><tr key={i}>{row.map((value,j)=><td className="preserve-lines" key={j}>{value}</td>)}</tr>)}</tbody></table></div>:<p>{section.empty}</p>}</>}{section.paragraphs?.map((p,i)=><p key={i} className="preserve-lines">{p}</p>)}</section>)}
  </article>}
  </div>
 }

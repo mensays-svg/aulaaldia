@@ -1,3 +1,5 @@
+import {individualAnalytics} from '@/lib/school/report-analytics'
+import ReportCharts from './report-charts'
 import Link from 'next/link'
 import {schoolContext} from '@/lib/school/context'
 import {limaDate} from '@/lib/school/gate'
@@ -33,7 +35,7 @@ export default async function ReportsPage({searchParams}:{searchParams:Promise<{
  {error&&<p role="alert" className="notice">{error}</p>}
  {report&&<div className="import-controls"><a className="import-link" href={pdf}>Descargar PDF</a><PrintReport/><Link href={'/dashboard/reportes?'+new URLSearchParams({school,student:report.student.id,period:report.period.id})}>Actualizar reporte</Link></div>}</div>
  {report&&<article id="student-report" className="student-report"><header><p className="eyebrow">AULA AL DÍA · REPORTE INDIVIDUAL</p><h1>{report.school.name}</h1><h2>{report.student.name}</h2><p>DNI: {report.student.dni??'Sin DNI'} · Aula actual: {report.student.classroom}</p>{report.student.period_classroom!==undefined&&<p>Aula del periodo: {report.student.period_classroom??'Sin matrícula registrada para este periodo'}{report.student.enrollment_dates_unknown?' · Fecha inicial no disponible.':''}</p>}<p><strong>{report.period.name} · {report.period.academic_year}</strong><br/>{reportDate(report.period.starts_on)} al {reportDate(report.period.ends_on)}</p><p>Emitido: {reportTime(report.issued_at)} (hora de Lima).</p></header>
- {sections.map((section,index)=><section key={index}><h2>{section.heading}</h2>{section.columns&&<>{section.rows?.length?<div className="table-scroll"><table><thead><tr>{section.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{section.rows.map((row,i)=><tr key={i}>{row.map((value,j)=><td key={j} className="preserve-lines">{value}</td>)}</tr>)}</tbody></table></div>:<p>{section.empty}</p>}</>}{section.paragraphs?.map((text,i)=><p key={i} className="preserve-lines">{text}</p>)}</section>)}
+ <ReportCharts analytics={individualAnalytics(report)}/>{sections.map((section,index)=><section key={index}><h2>{section.heading}</h2>{section.columns&&<>{section.rows?.length?<div className="table-scroll"><table><thead><tr>{section.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{section.rows.map((row,i)=><tr key={i}>{row.map((value,j)=><td key={j} className="preserve-lines">{value}</td>)}</tr>)}</tbody></table></div>:<p>{section.empty}</p>}</>}{section.paragraphs?.map((text,i)=><p key={i} className="preserve-lines">{text}</p>)}</section>)}
  </article>}
  </div>
 }

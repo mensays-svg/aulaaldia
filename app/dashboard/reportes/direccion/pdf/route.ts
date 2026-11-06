@@ -1,3 +1,4 @@
+import {managementAnalytics} from '@/lib/school/report-analytics'
 import type {NextRequest} from 'next/server'
 import {getManagementReport} from '@/lib/school/report-data'
 import {buildManagementSections,managementFilterLabel} from '@/lib/school/management-reports'
@@ -11,7 +12,8 @@ export async function GET(request:NextRequest){
  if(!result.report)return Response.json({error:result.error},{status:result.status,headers})
  const report=result.report
  try{
-  const bytes=await renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte institucional · '+report.period.name,title:'REPORTE GENERAL PARA DIRECCIÓN',context:managementFilterLabel(report.filters,report.cohort_basis==='enrollment_history'),subject:report.period.name,issuedAt:report.issued_at,landscape:true,lines:['Periodo: '+report.period.name+' · '+report.period.starts_on.split('-').reverse().join('/')+' al '+report.period.ends_on.split('-').reverse().join('/'),managementFilterLabel(report.filters,report.cohort_basis==='enrollment_history'),report.cohort_basis==='enrollment_history'?'Uso institucional. Agrupación por matrícula del periodo.':'Uso institucional. La agrupación corresponde a las aulas actuales.']},buildManagementSections(report))
+  const viewUrl=new URL(request.url);viewUrl.pathname='/dashboard/reportes/direccion'
+  const bytes=await renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte institucional · '+report.period.name,title:'REPORTE GENERAL PARA DIRECCIÓN',context:managementFilterLabel(report.filters,report.cohort_basis==='enrollment_history'),subject:report.period.name,issuedAt:report.issued_at,landscape:true,analytics:managementAnalytics(report),viewUrl:viewUrl.toString(),lines:['Periodo: '+report.period.name+' · '+report.period.starts_on.split('-').reverse().join('/')+' al '+report.period.ends_on.split('-').reverse().join('/'),managementFilterLabel(report.filters,report.cohort_basis==='enrollment_history'),report.cohort_basis==='enrollment_history'?'Uso institucional. Agrupación por matrícula del periodo.':'Uso institucional. La agrupación corresponde a las aulas actuales.']},buildManagementSections(report))
   return new Response(new Uint8Array(bytes),{headers:{...headers,'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="reporte-direccion-${report.filters.year}.pdf"`}})
  }catch{return Response.json({error:'No se pudo crear el PDF. Abre el reporte web y utiliza Imprimir / Guardar como PDF.'},{status:503,headers})}
 }
