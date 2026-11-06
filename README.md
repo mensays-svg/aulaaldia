@@ -95,3 +95,9 @@ Si ya instalaste las siete migraciones anteriores, ejecuta **solo** `supabase/mi
 En `/login` aparece **¿Olvidaste tu contraseña?** y en el panel **Cambiar contraseña**. La recuperación verifica un enlace de un solo uso al pulsar Continuar y permite establecer la nueva contraseña, incluso sin vínculo escolar. El cambio exige sesión validada en el servidor y confirmación de contraseña; al guardar, solicita cerrar sesiones y vuelve al login.
 
 **Configuración necesaria:** guardar el enlace de recuperación en la plantilla Supabase **Emails → Reset password**, siguiendo [la guía de recuperación](supabase/RECUPERAR_ACCESO.md). No requiere SQL. Pruebas: `npm run test:password` (auth simulada, sin correo real), `npm run build` y recorrido real de correo documentado.
+
+### Panel por rol y diseño adaptable
+
+El panel comparte un menú lateral en escritorio y un menú desplegable en móvil. Los accesos iniciales se adaptan a los roles de la institución seleccionada: Administración prioriza personas y vínculos; Dirección, sus reportes generales; Auxiliar, entrada/salida; Docente, asistencia por clase; Apoderado, reportes de sus estudiantes. Las cuentas con varios roles reúnen los accesos correspondientes. El menú conserva la institución al navegar y la tabla ofrece acceso directo al reporte individual.
+
+La apariencia usa fuentes del sistema, iconos SVG locales, formularios con foco visible y tablas con desplazamiento horizontal. El menú y la cabecera de la app se excluyen de la impresión. No cambia los permisos RLS ni requiere SQL. `npm run test:navigation` valida la selección de accesos por rol, las cuentas con varios roles y los enlaces de institución; las comprobaciones de permisos siguen disponibles en `npm run test:permissions`.

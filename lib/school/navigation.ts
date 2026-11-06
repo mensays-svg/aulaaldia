@@ -1,0 +1,42 @@
+export type SchoolLink = { id: string; title: string; description: string; path: string; icon: string }
+const links: Record<string, SchoolLink> = {
+ overview: { id:'overview', title:'Inicio', description:'Tu espacio de trabajo escolar.', path:'/dashboard', icon:'grid' },
+ direction: { id:'direction', title:'Vista de dirección', description:'Consulta los indicadores y reportes generales de la institución.', path:'/dashboard/reportes/direccion', icon:'chart' },
+ gate: { id:'gate', title:'Entrada y salida', description:'Consulta ingresos, salidas autorizadas y carnets QR.', path:'/dashboard/porteria', icon:'scan' },
+ classes: { id:'classes', title:'Asistencia por clase', description:'Abre tus sesiones y registra la asistencia de cada clase.', path:'/dashboard/clases', icon:'calendar' },
+ behavior: { id:'behavior', title:'Comportamiento', description:'Revisa el seguimiento y las evaluaciones de comportamiento.', path:'/dashboard/comportamiento', icon:'heart' },
+ reports: { id:'reports', title:'Reportes', description:'Consulta asistencia y comportamiento por estudiante y periodo.', path:'/dashboard/reportes', icon:'chart' },
+ enrollment: { id:'enrollment', title:'Matrículas', description:'Consulta el historial de aulas y matrículas por año escolar.', path:'/dashboard/matriculas', icon:'folder' },
+ students: { id:'students', title:'Estudiantes', description:'Busca estudiantes y consulta sus datos escolares.', path:'/dashboard#students', icon:'users' },
+ rooms: { id:'rooms', title:'Aulas', description:'Consulta los niveles, grados y secciones disponibles.', path:'/dashboard#classrooms', icon:'book' },
+ people: { id:'people', title:'Personas y vínculos', description:'Gestiona docentes, apoderados y sus vínculos escolares.', path:'/dashboard#people', icon:'users' },
+}
+export function roleNavigation(roles: string[]): SchoolLink[] {
+ const manager=roles.some(r=>['administrador','director'].includes(r))
+ const ids=['overview']
+ if(manager)ids.push('direction')
+ if(manager||roles.includes('auxiliar'))ids.push('gate')
+ if(manager||roles.includes('docente')||roles.includes('apoderado'))ids.push('classes','behavior')
+ if(roles.length)ids.push('reports','enrollment','students','rooms')
+ if(!manager&&!roles.includes('auxiliar')&&roles.length)ids.push('gate')
+ if(manager)ids.push('people')
+ return ids.map(id=>{
+  const item={...links[id]}
+  if(id==='classes'&&!manager&&!roles.includes('docente'))item.description='Consulta la asistencia publicada de tus estudiantes, clase por clase.'
+  if(id==='behavior'&&!manager&&!roles.includes('docente'))item.description='Consulta las evaluaciones y los seguimientos compartidos por el colegio.'
+  if(id==='gate'&&(manager||roles.includes('auxiliar')))item.description='Registra ingresos, salidas autorizadas y retornos. Usa DNI o QR.'
+  if(id==='enrollment'&&manager)item.description='Gestiona matrículas por año, cambios de aula, retiros y reingresos.'
+  return item
+ })
+}
+export function roleHome(roles:string[]) {
+ if(roles.includes('administrador'))return{title:'Tu institución, en un solo lugar',description:'Organiza estudiantes, aulas y accesos. Acompaña el trabajo diario de tu comunidad educativa.',primary:'people',cards:['direction','enrollment','gate','classes'],scope:'Estudiantes de la institución'}
+ if(roles.includes('director'))return{title:'Una mirada a tu comunidad educativa',description:'Consulta los reportes de la institución y acompaña la asistencia y el desarrollo de tus estudiantes.',primary:'direction',cards:['reports','enrollment','behavior','classes'],scope:'Estudiantes de la institución'}
+ if(roles.includes('auxiliar'))return{title:'Cada ingreso y salida, al día',description:'Registra los movimientos del colegio y consulta a tus estudiantes desde un mismo espacio.',primary:'gate',cards:['gate','students','enrollment','reports'],scope:'Estudiantes de la institución'}
+ if(roles.includes('docente'))return{title:'Todo listo para tu próxima clase',description:'Registra la asistencia de tus aulas y acompaña el comportamiento de tus estudiantes.',primary:'classes',cards:['classes','behavior','reports','enrollment'],scope:'Estudiantes de tus aulas'}
+ return{title:'Más cerca de su día a día',description:'Acompaña la asistencia y el comportamiento de los estudiantes vinculados a tu cuenta.',primary:'reports',cards:['reports','classes','behavior','enrollment'],scope:'Estudiantes vinculados a tu cuenta'}
+}
+export function schoolHref(path:string,school?:string):string {
+ const [base,hash]=path.split('#')
+ return base+(school?'?'+new URLSearchParams({school}):'')+(hash?'#'+hash:'')
+}
