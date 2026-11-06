@@ -1,7 +1,7 @@
 import {individualAnalytics,chartValue} from '../lib/school/report-analytics.ts'
 import assert from 'node:assert/strict'
 import {writeFileSync} from 'node:fs'
-import {PDFDocument} from 'pdf-lib'
+import {PDFDocument,PDFName} from 'pdf-lib'
 import {buildReportSections} from '../lib/school/reports.ts'
 import {renderReportPdf} from '../lib/school/report-pdf.ts'
 const report={issued_at:'2026-11-06T02:00:00Z',school:{id:'school',name:'I.E. Ficticia San José'},student:{id:'student',name:'Muñoz Peña, María José',dni:'98000999',classroom:'2026 · Secundaria 1 A',active:true},period:{id:'period',name:'Periodo de prueba',academic_year:2026,starts_on:'2026-01-01',ends_on:'2026-12-31'},can_classes:true,can_behavior:true,gate_summary:{movements:0,first_entries:0,late_entries:0,on_time_entries:0,unclassified_entries:0,early_exits:0},gate_events:[],class_summary:{sessions:1,present:1,late:0,absent:0,justified:0},classes:[{date:'2026-11-05',starts_at:'08:00:00',ends_at:'09:00:00',course:'Matemática',classroom:'2026 · Secundaria 1 A',status:'present',note:'Observación revisada para la familia.'}],evaluation:{presentation:17,punctuality:14,coexistence:18,responsibility:16,final_score:16,rationale:'Sustento de prueba según la rúbrica institucional.',published_at:'2026-11-06T02:00:00Z',rubric_name:'Rúbrica de prueba',rubric_reference:'Acta ficticia'},records:[]}
@@ -30,7 +30,18 @@ const simple=await renderReportPdf(report,sections,'https://aulaaldia.vercel.app
 assert.ok(Buffer.from(simple).subarray(0,8).toString().startsWith('%PDF-'));checks++
 const simpleDocument=await PDFDocument.load(simple);assert.ok(simpleDocument.getPageCount()>0);checks++
 assert.ok(simpleDocument.getPages().some(p=>p.node.Annots()?.size()>0));checks++
+assert.ok(simpleDocument.getPages()[0].node.Annots().asArray().some(ref=>simpleDocument.context.lookup(ref).has(PDFName.of('Dest'))));checks++
 assert.equal(simpleDocument.getTitle(),'Reporte individual · Muñoz Peña, María José');checks++
+const noData={...report,classes:[],class_summary:{sessions:0,present:0,late:0,absent:0,justified:0},evaluation:null}
+const noDataBytes=await renderReportPdf(noData,buildReportSections(noData),'https://aulaaldia.vercel.app/dashboard/reportes')
+const noDataDocument=await PDFDocument.load(noDataBytes)
+assert.equal(noDataDocument.getPageCount(),1);checks++
+writeFileSync('/tmp/aulaaldia-reporte-sin-datos.pdf',noDataBytes)
+const visual={...report,gate_summary:{movements:25,first_entries:20,late_entries:4,on_time_entries:15,unclassified_entries:1,early_exits:2},class_summary:{sessions:30,present:24,late:3,absent:2,justified:1}}
+const visualBytes=await renderReportPdf(visual,buildReportSections(visual),'https://aulaaldia.vercel.app/dashboard/reportes')
+writeFileSync('/tmp/aulaaldia-reporte-visual.pdf',visualBytes)
+const visualDocument=await PDFDocument.load(visualBytes)
+assert.ok(visualDocument.getPages().slice(1).every(p=>p.node.Annots()?.size()>0));checks++
 const historical={...report,student:{...report.student,period_classroom:'2025 · Primaria 6 B',enrollment_dates_unknown:true}}
 const historicalBytes=await renderReportPdf(historical,buildReportSections(historical))
 assert.ok((await PDFDocument.load(historicalBytes)).getPageCount()>0);checks++
