@@ -69,3 +69,9 @@ Para activar, ejecutar únicamente `supabase/migrations/202611050004_class_atten
 Incluye periodos, rúbricas institucionales, reconocimientos, incidencias, seguimientos y consulta familiar. Los cuatro criterios institucionales y la nota final se consignan en escala de 0 a 20. La nota final la determina el evaluador aplicando la rúbrica; no hay promedio, descuentos ni sanciones automáticas. Publicar exige una rúbrica registrada y evaluación completa con sustento. Las familias no ven borradores ni anotaciones internas.
 
 Para activar, ejecutar únicamente `supabase/migrations/202611050005_behavior.sql`. Véase [la guía de comportamiento](supabase/COMPORTAMIENTO.md) para permisos, límites, publicación y preparación de una prueba. La automatización de la nota final queda pendiente de recibir una regla concreta aprobada por la institución. `npm run test:behavior` prueba el ciclo y la privacidad en PostgreSQL embebido.
+
+### Reportes individuales
+
+**Reportes** reúne asistencia al colegio, clases cerradas, conducta publicada y resúmenes de comportamiento comunicados a la familia por estudiante y periodo. Ofrece una descarga PDF real y una vista imprimible. Los apoderados solo acceden a sus hijos; el auxiliar conserva un alcance de portería y las clases del docente respetan sus asignaciones.
+
+Para activar, ejecutar únicamente `supabase/migrations/202611050006_student_reports.sql`. Consulta [la guía de reportes](supabase/REPORTES.md). `npm run test:reports` valida permisos y contenido en PostgreSQL embebido; `npm run test:report-pdf` valida generación y paginación con datos ficticios. Las fuentes locales y su licencia están en `assets/fonts` y se incluyen en el despliegue mediante `next.config.ts`.
