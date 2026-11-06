@@ -26,7 +26,7 @@ Requiere Node.js 20.9 o superior.
 - Sin sesión, abrir `/dashboard` debe redirigir a `/login`.
 - Con un proyecto configurado: crear una cuenta, confirmar el correo, iniciar sesión, acceder al panel, cerrar sesión y comprobar que el panel vuelve a exigir login. Probar también un enlace de confirmación caducado.
 
-La conexión y los flujos reales de autenticación requieren configurar un proyecto Supabase. No se han creado tablas ni políticas de datos: al añadir datos escolares, habilita RLS y define políticas antes de exponerlos al cliente.
+La conexión y los flujos reales de autenticación requieren configurar un proyecto Supabase. Las migraciones escolares y sus políticas RLS se activan siguiendo la guía de base de datos.
 
 Con el servidor arrancado, `node scripts/smoke.mjs` comprueba acceso público, redirección anónima del panel, confirmación inválida y bloqueo del cierre de sesión desde otro origen. Puedes establecer `TEST_BASE_URL` para otro origen local de pruebas.
 
@@ -44,7 +44,7 @@ En **Estudiantes → Cargar estudiantes en bloque**, descarga la plantilla únic
 
 Se aceptan hasta 500 estudiantes y 256 KB por archivo, con separadores de coma, punto y coma o tabulación. Año: cuatro dígitos entre 2000 y 2100. Nivel: Inicial, Primaria o Secundaria. Grado: Inicial 3, 4 o 5 años; Primaria 1–6; Secundaria 1–5. Sección: obligatoria, se convierte a mayúsculas. El aula se identifica por institución + año + nivel + grado + sección. Las formas habituales de grado (1, 1.º, primero) se consideran equivalentes.
 
-El DNI es obligatorio en la carga masiva. Los alumnos sin DNI pueden registrarse individualmente. Los DNI repetidos en el archivo o ya registrados en la institución bloquean la carga; no se trasladan ni reemplazan estudiantes existentes. Para nuevas matrículas de alumnos existentes se necesitará el futuro módulo de matrícula histórica.
+El DNI es obligatorio en la carga masiva. Los alumnos sin DNI pueden registrarse individualmente. Los DNI repetidos en el archivo o ya registrados en la institución bloquean la carga; no se trasladan ni reemplazan estudiantes existentes. Para nuevos años de alumnos existentes utiliza Matrículas; no vuelvas a importar sus DNI.
 
 La vista previa lista los estudiantes y distingue aulas existentes de aulas por crear. Antes de confirmar no se guarda nada. La nueva función de base de datos comprueba permisos, DNI y campos otra vez y guarda aulas y estudiantes en una única transacción: si falla un registro, se revierte todo el lote. Un reintento con los mismos DNI no duplica estudiantes. Si se pierde la conexión, comprueba el listado antes de volver a intentarlo.
 
@@ -78,8 +78,14 @@ Para activar, ejecutar únicamente `supabase/migrations/202611050006_student_rep
 
 ### Reportes generales para dirección
 
-Disponible para Director y Administrador en **Reportes → Reportes generales para dirección**. Filtra año, periodo, nivel, grado, sección y estudiantes activos/inactivos. Incluye resúmenes por aula actual, pendientes de cierre, asistencia y conducta publicada, además de detalle por estudiante y PDF institucional horizontal.
+Disponible para Director y Administrador en **Reportes → Reportes generales para dirección**. Filtra año, periodo, nivel, grado, sección y estudiantes activos/inactivos. Con la migración 008 incluye resúmenes por aula del periodo, pendientes de cierre, asistencia y conducta publicada, además de detalle por estudiante y PDF institucional horizontal.
 
-Para activar, ejecutar únicamente `supabase/migrations/202611050007_management_reports.sql`. Consulta [la guía de dirección](supabase/DIRECCION.md), especialmente la diferencia entre agrupación por aula actual y matrícula histórica. Las notas pendientes no se convierten en cero ni modifican el promedio; el promedio descriptivo no cambia ninguna evaluación.
+Para activar, ejecutar únicamente `supabase/migrations/202611050007_management_reports.sql`. Consulta [la guía de dirección](supabase/DIRECCION.md), y activa la migración 008 para conservar las aulas del periodo mediante matrículas históricas. Las notas pendientes no se convierten en cero ni modifican el promedio; el promedio descriptivo no cambia ninguna evaluación.
 
 Pruebas: `npm run test:management-reports`, `npm run test:management-pdf`, `npm run test:report-pdf` y `npm run build`.
+
+### Matrículas por año e historial
+
+**Matrículas** permite a Director y Administrador preparar el siguiente año, activar la matrícula en su año, cambiar aula/sección, registrar retiros y reingresos. Conserva el mismo estudiante, DNI, vínculos familiares, QR y registros educativos. La preparación por aula admite vista previa y hasta 500 estudiantes en una transacción; requiere autorización institucional y no decide promociones automáticamente.
+
+Si ya instalaste las siete migraciones anteriores, ejecuta **solo** `supabase/migrations/202611050008_enrollment_history.sql`. No repitas scripts anteriores. Lee [la guía de matrículas](supabase/MATRICULAS.md) para el recorrido de prueba, los permisos y las limitaciones del padrón inicial. Pruebas: `npm run test:enrollments`, `npm run test:report-pdf`, `npm run test:management-pdf` y `npm run build`.

@@ -25,7 +25,7 @@ export default function ImportForm({ school }: { school: string }) {
     })
   }
   return <>
-    <p>Importa varias aulas en un solo archivo, hasta <strong>500 estudiantes</strong> y <strong>256 KB</strong>. Cada estudiante quedará activo en el aula indicada en su fila. Las aulas que falten se crearán al confirmar.</p>
+    <p>Importa varias aulas en un solo archivo, hasta <strong>500 estudiantes</strong> y <strong>256 KB</strong>. Las aulas que falten se crearán al confirmar. Con Matrículas activado, los años futuros quedan planificados; los años anteriores se conservan como antecedentes. Usa Matrículas para renovar alumnos ya registrados, sin volver a importarlos.</p>
     <ol><li>Descarga la <a href="/plantilla-estudiantes.csv" download>plantilla CSV</a>.</li><li>Completa las columnas <strong>dni, nombres, apellidos, año, nivel, grado y sección</strong>. El DNI es obligatorio en la carga masiva; conserva sus ocho dígitos usando formato Texto en Excel.</li><li>Guarda como <strong>CSV UTF-8</strong>. Se aceptan separadores de coma, punto y coma o tabulación.</li></ol>
     <p>Usa año de cuatro dígitos; nivel Inicial, Primaria o Secundaria; grado numérico (Inicial: 3, 4 o 5 años; Primaria: 1–6; Secundaria: 1–5). La sección se convertirá a mayúsculas. El aula se identifica por año + nivel + grado + sección.</p>
     <p>No incluyas filas de ejemplo. Los estudiantes sin DNI se pueden registrar individualmente. Si hay un error o DNI repetido, tendrás que corregir el archivo; no se reemplazan registros existentes.</p>

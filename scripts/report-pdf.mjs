@@ -16,6 +16,10 @@ const simple=await renderReportPdf(report,sections)
 assert.ok(Buffer.from(simple).subarray(0,8).toString().startsWith('%PDF-'));checks++
 const simpleDocument=await PDFDocument.load(simple);assert.ok(simpleDocument.getPageCount()>0);checks++
 assert.equal(simpleDocument.getTitle(),'Reporte individual · Muñoz Peña, María José');checks++
+const historical={...report,student:{...report.student,period_classroom:'2025 · Primaria 6 B',enrollment_dates_unknown:true}}
+const historicalBytes=await renderReportPdf(historical,buildReportSections(historical))
+assert.ok((await PDFDocument.load(historicalBytes)).getPageCount()>0);checks++
+writeFileSync('/tmp/aulaaldia-reporte-matricula-prueba.pdf',historicalBytes)
 // Stress multi-page rendering, long unsplittable text and one row taller than a page.
 report.classes=Array.from({length:130},(_,i)=>({...report.classes[0],course:'Matemática '+(i+1),note:i===129?'MARCADOR_ULTIMA_CLASE':('Seguimiento familiar del estudiante. ').repeat(5)}))
 report.class_summary.sessions=130;report.class_summary.present=130

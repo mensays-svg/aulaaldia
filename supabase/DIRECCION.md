@@ -4,7 +4,7 @@
 
 Si las seis migraciones anteriores ya están instaladas, ejecutar **solo** `migrations/202611050007_management_reports.sql` una vez en Supabase SQL Editor. No repetir scripts anteriores ni bootstrap. Es una función de consulta: no cambia datos escolares.
 
-Para una instalación nueva, ejecutar las siete migraciones en orden y después el bootstrap.
+Para una instalación nueva, ejecutar las ocho migraciones en orden y después el bootstrap.
 
 ## Uso
 
@@ -30,7 +30,9 @@ No contiene textos internos, versiones reservadas del estudiante, notas libres d
 
 ## Cómo interpretar los datos
 
-**La agrupación corresponde al aula y estado actuales del estudiante.** Los totales de cada alumno incluyen sus marcaciones autorizadas del periodo, aunque una sesión histórica fuera de otra aula. No reconstruye una matrícula histórica; un estudiante trasladado a otro año/aula puede quedar fuera de un filtro sobre su aula anterior. Para reconstruir padrones históricos se necesitará el módulo de matrículas por año, que no se ha implementado.
+Con la migración 008 instalada, **la agrupación usa la última asignación de matrícula que se cruza con el periodo y su estado al cierre del periodo**. Un traslado posterior a un periodo terminado no mueve al estudiante de ese reporte. Si cambia de sección dentro del periodo, aparece una sola vez, en su última aula del periodo; los totales reúnen sus registros del periodo y cada marcación mantiene su aula original. No constituye una distribución de marcaciones por aula de origen.
+
+Las fechas iniciales del padrón anterior son desconocidas: se conserva su asociación anual disponible y se avisa cuántas matrículas no tienen fecha inicial. No se certifican fechas oficiales ni se reconstruyen aulas que nunca fueron registradas. Los planes futuros no entran en el padrón del periodo. Sin la migración 008, la función 007 usa aula y estado actuales. Consulta [Matrículas](MATRICULAS.md) para activar la actualización.
 
 Las sesiones pendientes se cuentan una vez por aula/sesión seleccionada, no una vez por alumno. El filtro de activo/inactivo afecta a los alumnos del resumen, no al calendario de sesiones del aula. Tener cero marcaciones publicadas no significa falta: puede no haber sesiones cerradas o registros todavía.
 

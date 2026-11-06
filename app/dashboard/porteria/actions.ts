@@ -7,6 +7,7 @@ import { gateQrToken, movements, reasons, formatGateTime, type GateResult } from
 function errorMessage(error: { code?:string; message?:string }):string {
   if (error.code === 'PGRST202' || error.code === '42P01' || error.code === '42883') return 'Falta activar el módulo de portería: ejecuta la migración 202611050003_gate_attendance.sql en Supabase.'
   const messages: Record<string,string> = {
+    ENROLLMENT_CURRENT_YEAR_REQUIRED:'Falta una matrícula vigente para este año y aula. Dirección debe revisar o activar la matrícula antes de marcar.',
     GATE_INVALID_TRANSITION:'El estado cambió o el movimiento no corresponde. Actualiza el estudiante y revisa su último movimiento.',
     GATE_EXIT_DETAILS_REQUIRED:'Indica el motivo y quién autorizó la salida anticipada.',
     GATE_QR_INVALID:'El QR no es válido para esta institución o fue reemplazado. Busca al estudiante por DNI o apellidos.',

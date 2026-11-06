@@ -4,7 +4,7 @@ import {normalizeGrade} from '@/lib/school/student-import'
 import type {ManagementFilters} from '@/lib/school/management-reports'
 type Period={id:string;name:string;academic_year:number;starts_on:string;ends_on:string}
 type Room={academic_year:number;level:string;grade:string;section:string}
-export default function ManagementFilterForm({school,periods,rooms,initial,periodId,today}:{school:string;periods:Period[];rooms:Room[];initial:ManagementFilters;periodId:string;today:string}){
+export default function ManagementFilterForm({school,periods,rooms,initial,periodId,today,historical=false}:{school:string;periods:Period[];rooms:Room[];initial:ManagementFilters;periodId:string;today:string;historical?:boolean}){
  const[year,setYear]=useState(initial.year),[period,setPeriod]=useState(periodId),[level,setLevel]=useState(initial.level??''),[grade,setGrade]=useState(initial.grade?normalizeGrade(initial.grade):''),[section,setSection]=useState(initial.section?.toUpperCase()??'')
  const years=[...new Set(periods.map(p=>p.academic_year))].sort((a,b)=>b-a)
  const available=rooms.filter(r=>r.academic_year===year&&(!level||r.level===level))
@@ -17,7 +17,7 @@ export default function ManagementFilterForm({school,periods,rooms,initial,perio
   <label>Nivel<select name="level" value={level} onChange={e=>{setLevel(e.target.value);setGrade('');setSection('')}}><option value="">Todos los niveles</option>{['Inicial','Primaria','Secundaria'].map(l=><option key={l}>{l}</option>)}</select></label>
   <label>Grado / edad de Inicial<select name="grade" value={grade} onChange={e=>{setGrade(e.target.value);setSection('')}}><option value="">Todos los grados</option>{grades.map(g=><option key={g}>{g}</option>)}</select></label>
   <label>Sección<select name="section" value={section} onChange={e=>setSection(e.target.value)}><option value="">Todas las secciones</option>{sections.map(s=><option key={s}>{s}</option>)}</select></label>
-  <label>Estado del estudiante<select name="state" defaultValue={initial.state}><option value="all">Activos e inactivos</option><option value="active">Solo activos</option><option value="inactive">Solo inactivos</option></select></label>
+  <label>{historical?'Estado de matrícula al corte':'Estado del estudiante'}<select name="state" defaultValue={initial.state}><option value="all">{historical?'Todos los estados de matrícula':'Activos e inactivos'}</option><option value="active">{historical?'Matrículas activas al corte':'Solo activos'}</option><option value="inactive">{historical?'Matrículas retiradas al corte':'Solo inactivos'}</option></select></label>
   <button>Aplicar filtros</button><p>Aplica los filtros para actualizar el reporte antes de descargar.</p>
  </form>
 }

@@ -1,0 +1,5 @@
+export const enrollmentStates:Record<string,string>={planned:'Planificada',active:'Activa',withdrawn:'Retirada',completed:'Cerrada por cambio de año',cancelled:'Plan cancelado',transferred:'Cambio de aula'}
+export const enrollmentActions:Record<string,string>={initial_snapshot:'Padrón inicial conservado',profile_registered:'Perfil registrado',plan:'Matrícula preparada',activate:'Matrícula activada',transfer:'Cambio de aula',withdraw:'Retiro',reactivate:'Reingreso',cancel_plan:'Plan cancelado'}
+export type EnrollmentEntry={id:string;year:number;classroom_id:string;classroom:string;state:string;source:string;placements:{classroom:string;from:string|null;until:string|null;state:string;source:string}[]}
+export type EnrollmentDetail={id:string;name:string;dni:string|null;revision:number;manager:boolean;enrollments:EnrollmentEntry[];events:{action:string;reason:string|null;at:string;revision:number}[]}
+export type EnrollmentResult={error?:string;message?:string;detail?:EnrollmentDetail;pupils?:{id:string;name:string;revision:number;request:string}[]}

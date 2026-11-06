@@ -20,6 +20,11 @@ assert.equal(behavior.rows.at(-1).at(-1),'Sin publicar');checks++
 assert.equal(behavior.rows.length,120);checks++
 assert.ok(!JSON.stringify(sections).includes('undefined'));checks++
 assert.ok(sections.at(-1).paragraphs.some(p=>p.includes('no como promedio de promedios')));checks++
+const historical={...report,cohort_basis:'enrollment_history',unknown_enrollment_dates:2}
+const historicalSections=buildManagementSections(historical)
+assert.ok(historicalSections.some(s=>s.heading==='Resumen por aula del periodo'));checks++
+assert.ok(historicalSections.at(-1).paragraphs.some(p=>p.includes('2 matrículas')&&p.includes('desconocida')));checks++
+assert.ok(managementFilterLabel(report.filters,true).includes('estados de matrícula'));checks++
 const bytes=await renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte institucional de prueba',title:'REPORTE GENERAL PARA DIRECCIÓN',context:managementFilterLabel(report.filters),subject:report.period.name,issuedAt:report.issued_at,landscape:true,lines:[report.period.name,managementFilterLabel(report.filters),'Datos ficticios.']},sections)
 const document=await PDFDocument.load(bytes)
 assert.ok(document.getPageCount()>5);checks++

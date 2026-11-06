@@ -47,3 +47,7 @@ El PDF usa fuentes DejaVu locales con licencia incluida en `assets/fonts/LICENSE
 - Prueba web: sin sesión, tanto el reporte como su descarga deben redirigir al login. Después de activar, probar con una cuenta de apoderado que solo pueda abrir a sus hijos y descargar el PDF de uno de ellos.
 
 En esta entrega también se comprobó el texto del PDF con `pdftotext` y se revisó visualmente una página. Esas utilidades no son necesarias en Vercel: la aplicación genera el documento directamente con pdf-lib.
+
+## Matrícula histórica
+
+Con la migración 008 se muestran el aula actual y el aula del periodo por separado. Un cambio posterior al periodo conserva su aula histórica. Si hay varias aulas dentro del periodo se indica la última; cada fila de asistencia mantiene su aula de origen. Las fechas iniciales desconocidas del padrón migrado se señalan expresamente. No se inventan matrículas para años que no constaban en el padrón. Los permisos de consulta se conservan.

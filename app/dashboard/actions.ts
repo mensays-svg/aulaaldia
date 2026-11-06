@@ -23,10 +23,8 @@ export async function manageSchool(form: FormData) {
     if (!validUuid(get('classroom')) || !validDni(get('dni')) || !get('first_names') || get('first_names').length > 100 || !get('last_names') || get('last_names').length > 120) done('Revisa los nombres, apellidos, aula y DNI de ocho dígitos; el DNI es opcional.')
     ;({ error } = await supabase.from('students').insert({ institution_id: school, classroom_id: get('classroom'), dni: get('dni') || null, first_names: get('first_names'), last_names: get('last_names') }))
   } else if (intent === 'status' && registrar) {
-    if (!validUuid(get('student')) || !['true','false'].includes(get('active'))) done('Estudiante no válido.')
-    const result = await supabase.from('students').update({ active: get('active') === 'true' }).eq('id', get('student')).eq('institution_id', school).select('id')
-    error = result.error
-    if (!error && !result.data?.length) done('No se encontró el estudiante.')
+    if (!validUuid(get('student'))) done('Estudiante no válido.')
+    redirect('/dashboard/matriculas?' + new URLSearchParams({ school, student: get('student') }))
   } else if (intent === 'role' && admin) {
     if (!schoolRoles.includes(get('role') as typeof schoolRoles[number]) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get('email')) || get('email').length > 254) done('Revisa el correo y el rol.')
     ;({ error } = await supabase.rpc('assign_school_role', { school, account_email: get('email'), assigned_role: get('role') }))

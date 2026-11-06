@@ -105,6 +105,7 @@ export async function renderReportPdf(report:StudentReport,sections:ReportSectio
  return renderDocumentPdf({schoolName:report.school.name,documentTitle:'Reporte individual · '+report.student.name,title:'REPORTE INDIVIDUAL DE SEGUIMIENTO',context:report.student.name+' · '+report.period.name,subject:report.period.name,issuedAt:report.issued_at,lines:[
   'Estudiante: '+report.student.name,
   'DNI: '+(report.student.dni??'Sin DNI')+' · Aula actual: '+report.student.classroom,
+  ...(report.student.period_classroom!==undefined?['Aula del periodo: '+(report.student.period_classroom??'Sin matrícula registrada para el periodo')+(report.student.enrollment_dates_unknown?' · Fecha inicial no disponible.':'')]:[]),
   'Periodo: '+report.period.name+' · '+report.period.starts_on.split('-').reverse().join('/')+' al '+report.period.ends_on.split('-').reverse().join('/'),
  ]},sections)
 }
