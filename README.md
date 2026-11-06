@@ -122,3 +122,5 @@ El PDF usa una ficha visual con cabecera institucional, tarjetas de indicadores,
 - Portería: después de confirmar un movimiento, el cursor regresa al campo de búsqueda y selecciona su texto para escribir el próximo DNI. La observación opcional queda plegada. Identidad, autorización y confirmación de cada movimiento se conservan.
 
 No requiere SQL adicional. Validación del guardado/publicación con cambios simultáneos: `npm run test:quick-attendance`; permisos y ciclo de clases: `npm run test:classes`.
+
+La ficha individual sigue el diseño de referencia: cabecera azul con periodo destacado, identidad del estudiante, tarjetas grandes de ingresos, clases, puntualidad y nota final; fondo claro y bloques redondeados. El caso sin registros muestra **Otros registros** y una explicación breve, sin barras vacías ni párrafos repetidos. La vista web usa la misma jerarquía. Los reportes con datos conservan sus gráficas y anexos; aula del periodo, matrícula sin fecha y límites de acceso siguen diferenciados.
