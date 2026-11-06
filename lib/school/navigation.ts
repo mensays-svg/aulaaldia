@@ -7,6 +7,7 @@ const links: Record<string, SchoolLink> = {
  behavior: { id:'behavior', title:'Comportamiento', description:'Revisa el seguimiento y las evaluaciones de comportamiento.', path:'/dashboard/comportamiento', icon:'heart' },
  reports: { id:'reports', title:'Reportes', description:'Consulta asistencia y comportamiento por estudiante y periodo.', path:'/dashboard/reportes', icon:'chart' },
  enrollment: { id:'enrollment', title:'Matrículas', description:'Consulta el historial de aulas y matrículas por año escolar.', path:'/dashboard/matriculas', icon:'folder' },
+ pdf: { id:'pdf', title:'Reportes PDF', description:'Descarga los reportes disponibles desde tu panel.', path:'/dashboard#pdf-reports', icon:'folder' },
  students: { id:'students', title:'Estudiantes', description:'Busca estudiantes y consulta sus datos escolares.', path:'/dashboard#students', icon:'users' },
  rooms: { id:'rooms', title:'Aulas', description:'Consulta los niveles, grados y secciones disponibles.', path:'/dashboard#classrooms', icon:'book' },
  people: { id:'people', title:'Personas y vínculos', description:'Gestiona docentes, apoderados y sus vínculos escolares.', path:'/dashboard#people', icon:'users' },
@@ -17,7 +18,7 @@ export function roleNavigation(roles: string[]): SchoolLink[] {
  if(manager)ids.push('direction')
  if(manager||roles.includes('auxiliar'))ids.push('gate')
  if(manager||roles.includes('docente')||roles.includes('apoderado'))ids.push('classes','behavior')
- if(roles.length)ids.push('reports','enrollment','students','rooms')
+ if(roles.length)ids.push('pdf','reports','enrollment','students','rooms')
  if(!manager&&!roles.includes('auxiliar')&&roles.length)ids.push('gate')
  if(manager)ids.push('people')
  return ids.map(id=>{

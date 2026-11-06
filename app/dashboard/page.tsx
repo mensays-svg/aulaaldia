@@ -3,6 +3,8 @@ import { schoolContext, roleLabels } from '@/lib/school/context'
 import { manageSchool } from './actions'
 import { roleHome,roleNavigation,schoolHref } from '@/lib/school/navigation'
 import Icon from '@/app/components/ui-icon'
+import ReportDownloads from './report-downloads'
+import {limaDate} from '@/lib/school/gate'
 export const dynamic = 'force-dynamic'
 
 type Classroom = { id: string; academic_year: number; level: string; grade: string; section: string }
@@ -18,18 +20,21 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const session = <form action="/auth/signout" method="post" className="signout"><button className="secondary">Cerrar sesión</button></form>
   if (setupError) return <><h1>Mi panel</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">No se pudo cargar la organización escolar. La base escolar debe estar instalada y disponible en Supabase.</p><p>El acceso a tu cuenta funciona. Contacta con el administrador para habilitar los módulos escolares.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
   if (!school) return <><h1>Bienvenido a Aula al Día</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">Tu cuenta está pendiente de vinculación. La institución debe asignarte un rol; si eres apoderado, también debe vincular a tus hijos.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
-  const [institutionsResult, classroomsResult, studentsResult, membersResult, teachersResult, guardiansResult] = await Promise.all([
+  const [institutionsResult, classroomsResult, studentsResult, membersResult, teachersResult, guardiansResult, periodsResult] = await Promise.all([
     supabase.from('institutions').select('id,name'),
     supabase.from('classrooms').select('id,academic_year,level,grade,section').eq('institution_id', school).order('academic_year', { ascending: false }).order('grade').order('section'),
     supabase.from('students').select('id,classroom_id,first_names,last_names,dni,active').eq('institution_id', school).order('last_names'),
     manager ? supabase.rpc('list_school_members', { school }) : Promise.resolve({ data: [], error: null }),
     manager ? supabase.from('teacher_assignments').select('classroom_id,user_id').eq('institution_id', school) : Promise.resolve({ data: [], error: null }),
     manager ? supabase.from('student_guardians').select('student_id,user_id,relationship').eq('institution_id', school) : Promise.resolve({ data: [], error: null }),
+    supabase.from('behavior_periods').select('id,name,academic_year,starts_on,ends_on').eq('institution_id',school).order('academic_year',{ascending:false}).order('starts_on',{ascending:false}).limit(1000),
   ])
   const failed = [institutionsResult, classroomsResult, studentsResult, membersResult, teachersResult, guardiansResult].some(r => r.error)
   const institutions = (institutionsResult.data ?? []) as { id: string; name: string }[]
   const classrooms = (classroomsResult.data ?? []) as Classroom[]
   const students = (studentsResult.data ?? []) as Student[]
+  const periods=periodsResult.data??[],today=limaDate()
+  const defaultPeriod=periods.find(p=>p.starts_on<=today&&p.ends_on>=today)??periods.find(p=>p.starts_on<=today)??periods[0]
   const members = (membersResult.data ?? []) as Member[]
   const home=roleHome(roles), navigation=roleNavigation(roles), primary=navigation.find(n=>n.id===home.primary)
   const q = (params.q ?? '').trim().toLocaleLowerCase('es')
@@ -48,6 +53,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     {failed && <p className="notice" role="alert">No se pudieron cargar todos los datos. Intenta recargar la página. Los totales pueden estar incompletos.</p>}
     <div className="metrics"><article><span className="metric-icon"><Icon name="users"/></span><div><span>{home.scope}</span><strong>{students.length}</strong></div></article><article><span className="metric-icon lavender"><Icon name="book"/></span><div><span>Aulas disponibles para tu cuenta</span><strong>{classrooms.length}</strong></div></article><article><span className="metric-icon amber"><Icon name="folder"/></span><div><span>Estudiantes activos de tu selección</span><strong>{students.filter(s=>s.active).length}</strong></div></article></div>
     <section className="quick-section"><div className="section-heading"><div><p className="eyebrow">A TU ALCANCE</p><h2>¿Qué hacemos hoy?</h2></div><span>Accesos según tu rol</span></div><div className="quick-grid">{home.cards.map(id=>navigation.find(n=>n.id===id)).filter(n=>!!n).map(n=><Link className="quick-card" key={n.id} href={schoolHref(n.path,school)}><span className="quick-icon"><Icon name={n.icon}/></span><h3>{n.title}</h3><p>{n.description}</p><span className="card-action">Abrir módulo<Icon name="arrow"/></span></Link>)}</div></section>
+    <ReportDownloads key={school} school={school} periods={periods} students={students} manager={manager} gateOnly={!manager&&!roles.some(r=>['docente','apoderado'].includes(r))} defaultPeriod={defaultPeriod?.id??''} error={!!periodsResult.error}/>
     <section id="students">{registrar && <Link className="import-link" href={'/dashboard/importar?school=' + school}>Cargar estudiantes en bloque</Link>}<h2>{registrar ? 'Estudiantes' : 'Mis estudiantes'}</h2><p>{roles.includes('apoderado') && !registrar && !roles.includes('docente') ? 'Solo puedes consultar los estudiantes vinculados a tu cuenta.' : 'Consulta estudiantes por DNI, apellidos o nombres.'}</p>
       <form method="get" className="search"><input type="hidden" name="school" value={school} /><label>Buscar estudiante<input name="q" defaultValue={params.q} maxLength={120} placeholder="DNI, apellidos o nombres" /></label><button>Buscar</button><Link href={'/dashboard?school=' + school}>Limpiar</Link></form>
       <div className="table-scroll"><table><thead><tr><th>Apellidos y nombres</th><th>DNI</th><th>Aula</th><th>Estado</th><th>Accesos</th></tr></thead><tbody>{visibleStudents.map(s => <tr key={s.id}><td>{s.last_names}, {s.first_names}</td><td>{s.dni ?? 'Sin DNI'}</td><td>{classroomName(s.classroom_id)}</td><td><span className={'status-badge'+(s.active?'':' inactive')}>{s.active ? 'Activo' : 'Inactivo'}</span></td><td><div className="row-actions"><Link href={'/dashboard/reportes?'+new URLSearchParams({school,student:s.id})}>Ver reporte</Link>{registrar&&<Link href={'/dashboard/matriculas?'+new URLSearchParams({school,student:s.id})}>Matrícula</Link>}</div></td></tr>)}</tbody></table></div>
