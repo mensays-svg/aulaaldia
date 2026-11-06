@@ -27,7 +27,7 @@ let checks=0
 function check(value){assert.ok(value);checks++}
 function form(values){const f=new FormData();for(const[k,v]of Object.entries(values))f.set(k,v);return f}
 async function redirected(action,values,path,match){calls=[];let location;try{await action(form(values))}catch(e){location=e.location;if(!location)throw e}check(location);const url=new URL(location,'http://test');assert.equal(url.pathname,path);checks++;if(match){assert.match(url.searchParams.get('message')??'',match);checks++}return calls}
-check(validRecoveryToken('a'.repeat(64)));check(!validRecoveryToken('a'.repeat(63)));check(!validRecoveryToken('https://example.com'));check(!validRecoveryToken('g'.repeat(64)))
+check(validRecoveryToken('a'.repeat(64)));check(validRecoveryToken('a'.repeat(56)));check(validRecoveryToken('pkce_'+'a'.repeat(56)));check(!validRecoveryToken('a'.repeat(257)));check(!validRecoveryToken('https://example.com'));check(!validRecoveryToken('{{ .TokenHash }}'));check(!validRecoveryToken('a'.repeat(55)+'<'))
 check(passwordValidation('abc','abc'));check(passwordValidation('x'.repeat(129),'x'.repeat(129)));check(passwordValidation('valid-pass','different'));assert.equal(passwordValidation(' valid-pass ',' valid-pass '),null);checks++
 check(passwordError({code:'same_password'}).includes('distinta'));check(passwordError({code:'reauthentication_needed'}).includes('nuevo enlace'));check(!passwordError({message:'secret smtp details'}).includes('secret'))
 check((await redirected(requestRecovery,{email:'bad'},'/recuperar',/válido/)).length===0)
@@ -37,7 +37,8 @@ failure={status:429};await redirected(requestRecovery,{email:'test@example.test'
 failure={status:500,message:'private SMTP details'};await redirected(requestRecovery,{email:'test@example.test'},'/recuperar',/No se pudo/)
 failure=null;ready=false;await redirected(requestRecovery,{email:'test@example.test'},'/login');ready=true
 check((await redirected(confirmRecovery,{token_hash:'bad'},'/recuperar',/válido/)).length===0)
-const token='b'.repeat(64);await redirected(confirmRecovery,{token_hash:token},'/dashboard/seguridad');assert.deepEqual(calls,[['verify',{token_hash:token,type:'recovery'}]]);checks++
+const token='pkce_'+'b'.repeat(56);await redirected(confirmRecovery,{token_hash:token},'/dashboard/seguridad');assert.deepEqual(calls,[['verify',{token_hash:token,type:'recovery'}]]);checks++
+await redirected(confirmRecovery,{token_hash:'b'.repeat(56)},'/dashboard/seguridad');assert.deepEqual(calls,[['verify',{token_hash:'b'.repeat(56),type:'recovery'}]]);checks++
 failure={code:'otp_expired'};await redirected(confirmRecovery,{token_hash:token},'/recuperar',/caducado/)
 failure=null;otpSession=null;await redirected(confirmRecovery,{token_hash:token},'/recuperar',/caducado/);otpSession={access_token:'test-token'}
 user=null;await redirected(changePassword,{password:'valid-pass',confirmation:'valid-pass'},'/login');check(!calls.some(c=>c[0]==='update'));user={id:'test-user'}

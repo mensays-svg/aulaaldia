@@ -1,5 +1,7 @@
 export function validRecoveryToken(token: string): boolean {
-  return /^[a-f0-9]{64}$/i.test(token)
+  // Supabase uses SHA-224 (56 hex characters), with an optional PKCE prefix.
+  // Treat the token as opaque; Supabase verifies its authenticity and expiration.
+  return /^[A-Za-z0-9_-]{32,256}$/.test(token)
 }
 export function passwordValidation(password: string, confirmation: string): string | null {
   if (password.length < 8 || password.length > 128) return 'Usa una contraseña de 8 a 128 caracteres.'
