@@ -48,3 +48,18 @@ export async function getGateClassReport(school:string,classroom:string,date:str
  }
  return{report:result.data,status:200}
 }
+
+export async function getTeacherReport(school:string,period:string,classroom:string):Promise<{report?:import('./management-reports').ManagementReport;error?:string;status:number}>{
+ if(![school,period,classroom].every(validUuid))return{error:'Selecciona un aula y un periodo válidos.',status:400}
+ if(!configured())return{error:'La aplicación no está conectada a Supabase.',status:503}
+ const supabase=await createClient(),{data:{user},error}=await supabase.auth.getUser()
+ if(error||!user)return{error:'Inicia sesión para consultar el reporte.',status:401}
+ const result=await supabase.rpc('teacher_period_report',{school,period,classroom})
+ if(result.error){
+  if(result.error.code==='42501')return{error:'Solo puedes consultar los grados y secciones que tienes asignados.',status:403}
+  if(['PGRST202','42883','42P01'].includes(result.error.code))return{error:'Falta activar 202611070010_teacher_qr_reports.sql en Supabase.',status:503}
+  if(result.error.code==='22023')return{error:'El aula y el periodo deben corresponder al mismo año y a esta institución.',status:400}
+  return{error:'No se pudo cargar el reporte docente. Inténtalo de nuevo.',status:503}
+ }
+ return{report:result.data,status:200}
+}

@@ -7,6 +7,10 @@ for(const role of ['docente','auxiliar','apoderado']){
 }
 assert.ok(!ids(['auxiliar']).includes('behavior'));checks++
 assert.ok(!ids(['auxiliar']).includes('classes'));checks++
+assert.ok(ids(['docente']).includes('teacherReports'));checks++
+assert.ok(!ids(['docente']).includes('enrollment'));checks++
+assert.ok(!ids(['docente']).includes('students'));checks++
+assert.ok(!ids(['docente']).includes('rooms'));checks++
 assert.ok(!ids(['auxiliar']).includes('enrollment'));checks++
 assert.ok(!ids(['auxiliar']).includes('rooms'));checks++
 assert.ok(ids(['auxiliar']).includes('gateRooms'));checks++

@@ -6,7 +6,7 @@ Esta entrega incorpora roles, instituciones, aulas, estudiantes y vínculos con 
 
 1. Guarda una copia de seguridad si ya tienes datos escolares. Esta migración crea tablas nuevas y se ejecuta una sola vez; ante un conflicto de nombres, no borres tablas para forzarla.
 2. Abre el **SQL Editor** del proyecto Supabase que usa la app.
-3. Pega el contenido completo de `migrations/202611050001_school_foundation.sql` y pulsa **Run**. Después ejecuta `migrations/202611050002_unified_student_import.sql`, `migrations/202611050003_gate_attendance.sql`, `migrations/202611050004_class_attendance.sql`, `migrations/202611050005_behavior.sql`, `migrations/202611050006_student_reports.sql`, `migrations/202611050007_management_reports.sql`, `migrations/202611050008_enrollment_history.sql` y `migrations/202611070009_auxiliary_gate_role.sql` en consultas separadas, en ese orden. Cada archivo se aplica en su propia transacción. No necesita desactivar RLS ni usar service_role en la app.
+3. Pega el contenido completo de `migrations/202611050001_school_foundation.sql` y pulsa **Run**. Después ejecuta `migrations/202611050002_unified_student_import.sql`, `migrations/202611050003_gate_attendance.sql`, `migrations/202611050004_class_attendance.sql`, `migrations/202611050005_behavior.sql`, `migrations/202611050006_student_reports.sql`, `migrations/202611050007_management_reports.sql`, `migrations/202611050008_enrollment_history.sql`, `migrations/202611070009_auxiliary_gate_role.sql` y `migrations/202611070010_teacher_qr_reports.sql` en consultas separadas, en ese orden. Cada archivo se aplica en su propia transacción. No necesita desactivar RLS ni usar service_role en la app.
 4. Abre una nueva consulta. Copia `bootstrap.sql`, sustituye los valores del correo del administrador y nombre de la institución y ejecútala una sola vez. La cuenta elegida debe estar registrada con correo confirmado. Si la institución ya existe, revisa sus accesos antes de repetir este paso.
 5. Inicia sesión en la web con esa cuenta. En el panel, crea aulas y registra estudiantes.
 6. Pide a cada docente, auxiliar, director y apoderado que cree y confirme su cuenta. Como administrador, asigna sus roles por correo.
@@ -70,3 +70,7 @@ Con las siete migraciones anteriores instaladas, ejecuta **solo** `migrations/20
 ## Actualización: auxiliar de portería
 
 Con 001–008 instaladas, ejecutar solo `migrations/202611070009_auxiliary_gate_role.sql`. Retira creación/importación/edición de estudiantes y administración de QR al auxiliar; conserva identificación por QR existente y registro de portería. Añade reportes diarios por salón para auxiliar, dirección y administración. Véase [AUXILIAR.md](AUXILIAR.md).
+
+## Actualización: docente con QR de clase y reporte de sus aulas
+
+Con 001–009 instaladas, ejecutar solo `migrations/202611070010_teacher_qr_reports.sql`. Añade apertura/reanudación de sesión, QR validado contra su lista/horario y reporte docente por aula asignada. No amplía los permisos de portería ni permite reportes institucionales a docentes. Véase [DOCENTE.md](DOCENTE.md).

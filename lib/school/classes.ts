@@ -4,3 +4,5 @@ export type ClassDetail={id:string;course:string;classroom:string;teacher_id:str
 export type ClassResult={error?:string;message?:string;sessionId?:string;detail?:ClassDetail}
 export function validClassDate(value:string):boolean{return /^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value))&&new Date(value).toISOString().slice(0,10)===value}
 export function validClassTime(value:string):boolean{return /^([01]\d|2[0-3]):[0-5]\d$/.test(value)}
+
+export type ClassQrResult={error?:string;student_id?:string;name?:string;status?:string|null;revision?:number;repeated?:boolean;needs_review?:boolean;gate_kind?:string;gate_at?:string;gate_reason?:string|null;gate_expects_return?:boolean}

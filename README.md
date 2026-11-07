@@ -130,3 +130,9 @@ La ficha individual sigue el diseño de referencia: cabecera azul con periodo de
 El auxiliar tiene un inicio específico para escanear QR, búsqueda alternativa por DNI/nombres, confirmación de movimientos y PDF individual. Reportes por salón muestra ingresos, tardanzas, salidas y retornos por fecha, sin convertir falta de ingreso en inasistencia. No puede crear/importar/editar estudiantes, administrar carnets, modificar matrículas ni calificar conducta. Las salidas anticipadas mantienen motivo y autorización obligatorios.
 
 **Activación necesaria:** con 001–008 instaladas, ejecutar solo `supabase/migrations/202611070009_auxiliary_gate_role.sql`. Restringe los permisos también en Supabase y añade la consulta diaria por salón. No borra datos ni invalida QR existentes. Consulta [la guía del auxiliar](supabase/AUXILIAR.md). Pruebas: `npm run test:auxiliary`, `npm run test:navigation`, `npm run build`.
+
+### Docente: abrir sesión, QR y reportes de sus grados/secciones
+
+El inicio docente prioriza abrir o continuar una sesión. El QR registra presentes en su lista como borrador, sin duplicar lecturas ni cambiar marcaciones existentes; fuera del horario, en listas ajenas o con permiso retirado se rechaza. Una salida en portería requiere revisión manual. Se conservan las excepciones, las justificaciones y la publicación final. El docente dispone de comportamiento, reporte individual y reporte/PDF de sus aulas asignadas.
+
+**Activación:** con 001–009 instaladas, ejecutar solo `supabase/migrations/202611070010_teacher_qr_reports.sql`. Véase [DOCENTE.md](supabase/DOCENTE.md) para el recorrido y límites de acceso. Pruebas: `npm run test:teacher-qr`, `npm run test:teacher-pdf`, `npm run test:quick-attendance`, `npm run test:navigation` y `npm run build`.

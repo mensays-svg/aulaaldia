@@ -1,11 +1,12 @@
 'use server'
+import {gateQrToken} from '@/lib/school/gate'
 import { revalidatePath } from 'next/cache'
 import { schoolContext } from '@/lib/school/context'
 import { validUuid } from '@/lib/school/validation'
-import { classStatuses,validClassDate,validClassTime,type ClassResult } from '@/lib/school/classes'
+import { classStatuses,validClassDate,validClassTime,type ClassResult,type ClassQrResult } from '@/lib/school/classes'
 function errorMessage(error:{code?:string;message?:string}):string{
  if(['PGRST202','42P01','42883'].includes(error.code??''))return 'Falta activar asistencia por clase: ejecuta la migración 202611050004_class_attendance.sql en Supabase.'
- const known:Record<string,string>={CLASS_FORBIDDEN:'No tienes permiso para esta sesión o ya no estás asignado al aula.',CLASS_TEACHER_NOT_ASSIGNED:'El docente debe tener esta aula asignada en Personas y vínculos.',CLASS_INVALID_CLASSROOM:'Revisa el aula: su año escolar debe coincidir con la fecha de la clase.',CLASS_OVERLAP:'El aula o el docente ya tienen una sesión que coincide con ese horario.',CLASS_EMPTY_ROSTER:'El aula debe tener entre 1 y 1000 estudiantes activos.',CLASS_CLOSED:'La sesión está cerrada. Dirección debe reabrirla antes de corregir.',CLASS_STALE:'La sesión cambió desde que la abriste. Recárgala antes de guardar; el intento anterior podría estar guardado.',CLASS_FUTURE:'Todavía no comienza esta sesión según la hora de Lima.',CLASS_CORRECTION_REQUIRED:'Escribe el motivo de la corrección o reapertura.',CLASS_INCOMPLETE:'Falta marcar estudiantes. Guarda todas las asistencias antes de cerrar.',CLASS_NOT_FOUND:'No se encontró la sesión en esta institución.',CLASS_STUDENT_NOT_IN_ROSTER:'Uno de los estudiantes no pertenece a la lista de esta sesión.',CLASS_INVALID_INPUT:'Revisa los campos, estados y observaciones. Una ausencia justificada necesita una explicación.'}
+ const known:Record<string,string>={CLASS_QR_NOT_IN_ROSTER:'El carnet no pertenece a la lista de esta sesión o fue reemplazado.',CLASS_QR_OUTSIDE_TIME:'El QR solo registra durante la fecha y horario de esta sesión. Fuera de ese horario, revisa la asistencia manualmente.',CLASS_QR_REQUEST_CONFLICT:'El identificador del escaneo ya se usó con otros datos. Recarga la sesión.',CLASS_FORBIDDEN:'No tienes permiso para esta sesión o ya no estás asignado al aula.',CLASS_TEACHER_NOT_ASSIGNED:'El docente debe tener esta aula asignada en Personas y vínculos.',CLASS_INVALID_CLASSROOM:'Revisa el aula: su año escolar debe coincidir con la fecha de la clase.',CLASS_OVERLAP:'El aula o el docente ya tienen una sesión que coincide con ese horario.',CLASS_EMPTY_ROSTER:'El aula debe tener entre 1 y 1000 estudiantes activos.',CLASS_CLOSED:'La sesión está cerrada. Dirección debe reabrirla antes de corregir.',CLASS_STALE:'La sesión cambió desde que la abriste. Recárgala antes de guardar; el intento anterior podría estar guardado.',CLASS_FUTURE:'Todavía no comienza esta sesión según la hora de Lima.',CLASS_CORRECTION_REQUIRED:'Escribe el motivo de la corrección o reapertura.',CLASS_INCOMPLETE:'Falta marcar estudiantes. Guarda todas las asistencias antes de cerrar.',CLASS_NOT_FOUND:'No se encontró la sesión en esta institución.',CLASS_STUDENT_NOT_IN_ROSTER:'Uno de los estudiantes no pertenece a la lista de esta sesión.',CLASS_INVALID_INPUT:'Revisa los campos, estados y observaciones. Una ausencia justificada necesita una explicación.'}
  if(known[error.message??''])return known[error.message!]
  if(error.code==='23505')return 'Ya existe ese curso o sesión. Revisa el listado.'
  if(error.code==='42501')return 'No tienes permiso para realizar esta acción.'
@@ -33,9 +34,9 @@ export async function createSession(form:FormData):Promise<ClassResult>{
  if(!valid||(!manager&&!roles.includes('docente')))return{error:'No tienes permiso para crear sesiones.'}
  const teacher=manager?get('teacher'):user.id
  if(!validUuid(get('classroom'))||!validUuid(get('course'))||!validUuid(teacher)||!validClassDate(get('date'))||!validClassTime(get('start'))||!validClassTime(get('end'))||get('end')<=get('start')||get('topic').length>160)return{error:'Revisa aula, curso, docente, fecha y horario de la sesión.'}
- const result=await supabase.rpc('create_class_session',{school,classroom:get('classroom'),course:get('course'),teacher,day:get('date'),start_time:get('start'),end_time:get('end'),subject:get('topic')||null})
- if(result.error)return{error:errorMessage(result.error)}
- revalidatePath('/dashboard/clases');return{sessionId:result.data,message:'Sesión creada con la lista de estudiantes activos del aula.'}
+ const result=await supabase.rpc('open_class_session',{school,classroom:get('classroom'),course:get('course'),teacher,day:get('date'),start_time:get('start'),end_time:get('end'),subject:get('topic')||null})
+ if(result.error)return{error:['PGRST202','42883'].includes(result.error.code)?'Activa 202611070010_teacher_qr_reports.sql para abrir o continuar sesiones.':errorMessage(result.error)}
+ revalidatePath('/dashboard/clases');return{sessionId:result.data.session_id,message:result.data.reused?'Continuando la sesión abierta. No se duplicó.':'Sesión abierta con su lista de estudiantes. Ya puedes iniciar el QR.'}
 }
 export async function saveAttendance(school:string,lesson:string,revision:number,marks:{student_id:string;status:string;note:string}[],correction:string,publish=false):Promise<ClassResult>{
  const {valid,supabase}=await context(school)
@@ -60,4 +61,12 @@ export async function changeSessionState(school:string,lesson:string,revision:nu
  if(result.error)return{error:errorMessage(result.error)}
  revalidatePath('/dashboard/clases');const refreshed=await loadClass(school,lesson)
  return{...refreshed,message:state==='closed'?'Sesión cerrada. Los apoderados vinculados pueden consultar la asistencia de sus hijos.':'Sesión reabierta. Las correcciones necesitan un motivo y quedarán registradas.'}
+}
+
+export async function scanClassQr(school:string,lesson:string,revision:number,text:string,request:string):Promise<ClassQrResult>{
+ const {valid,supabase}=await context(school)
+ const code=typeof text==='string'?gateQrToken(text):null
+ if(!valid||!validUuid(lesson)||!validUuid(request)||!Number.isInteger(revision)||revision<0||!code)return{error:'Lee un carnet QR válido de Aula al Día.'}
+ const result=await supabase.rpc('scan_class_attendance',{school,lesson,code,expected_revision:revision,request})
+ return result.error?{error:['PGRST202','42883'].includes(result.error.code)?'Activa 202611070010_teacher_qr_reports.sql para registrar QR de clase.':errorMessage(result.error)}:result.data
 }

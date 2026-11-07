@@ -8,6 +8,7 @@ const supabase={rpc:async(name,args)=>{calls.push([name,args]);if(name==='save_c
 globalThis.__quickAttendance={schoolContext:async()=>({supabase,school,roles:['docente'],user:{id:student}}),revalidatePath:()=>{}}
 let source=await readFile(new URL('../app/dashboard/clases/actions.ts',import.meta.url),'utf8')
 source=source.replace("import { revalidatePath } from 'next/cache'","const {revalidatePath}=globalThis.__quickAttendance").replace("import { schoolContext } from '@/lib/school/context'","const {schoolContext}=globalThis.__quickAttendance").replace("'@/lib/school/validation'",JSON.stringify(pathToFileURL(process.cwd()+'/lib/school/validation.ts').href)).replace("'@/lib/school/classes'",JSON.stringify(pathToFileURL(process.cwd()+'/lib/school/classes.ts').href))
+source=source.replace("'@/lib/school/gate'",JSON.stringify(pathToFileURL(process.cwd()+'/lib/school/gate.ts').href))
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}})
 const {saveAttendance}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'))
 const marks=[{student_id:student,status:'present',note:''}]

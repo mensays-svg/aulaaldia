@@ -50,3 +50,7 @@ Crear un curso, asignar un aula al docente y preparar una sesión con fecha/hora
 `npm run test:classes` prueba la cadena de migraciones en PostgreSQL embebido (PGlite), con identidades simuladas. Cubre permisos, sesiones, superposición horaria, lista fija, guardado parcial, reversión de lotes, versiones, justificaciones, correcciones, publicación familiar y referencia temporal de portería. No modifica datos reales.
 
 La edición/cancelación de fechas y aulas de una sesión ya creada, la incorporación de alumnos a listas históricas y los horarios recurrentes no forman parte de esta entrega. Los reportes individuales y generales se descargan en PDF desde sus propios módulos. La evaluación de conducta se implementa en su propio módulo; la automatización de la nota final requiere una regla institucional aprobada.
+
+## Sesión y QR docente (actualización 010)
+
+El inicio docente abre o continúa una sesión antes de leer QR. Una lectura válida guarda Presente como borrador en la lista de la clase, solo durante su horario. No reemplaza estados existentes ni publica automáticamente. Se ignoran repeticiones y se bloquean listas ajenas, alumnos inactivos, permisos retirados y sesiones cerradas. Las salidas de portería se revisan manualmente. Las correcciones y justificaciones mantienen sus requisitos. Activación y pruebas en [DOCENTE.md](DOCENTE.md).
