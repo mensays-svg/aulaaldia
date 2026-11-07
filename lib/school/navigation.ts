@@ -1,7 +1,9 @@
+export function familyOnly(roles:string[]):boolean{return roles.includes('apoderado')&&!roles.some(r=>['administrador','director','auxiliar','docente'].includes(r))}
 export function teacherWorkspace(roles:string[]):boolean{return roles.includes('docente')&&!roles.some(r=>['administrador','director','auxiliar'].includes(r))}
 export function auxiliaryOnly(roles:string[]):boolean{return roles.includes('auxiliar')&&!roles.some(r=>['administrador','director','docente','apoderado'].includes(r))}
 export type SchoolLink = { id: string; title: string; description: string; path: string; icon: string }
 const links: Record<string, SchoolLink> = {
+ attendance: {id:'attendance',title:'Asistencia de mis hijos',description:'Comprueba sus ingresos y salidas del colegio.',path:'/dashboard/asistencia',icon:'calendar'},
  overview: { id:'overview', title:'Inicio', description:'Tu espacio de trabajo escolar.', path:'/dashboard', icon:'grid' },
  direction: { id:'direction', title:'Vista de dirección', description:'Consulta los indicadores y reportes generales de la institución.', path:'/dashboard/reportes/direccion', icon:'chart' },
  gate: { id:'gate', title:'Entrada y salida', description:'Consulta ingresos, salidas autorizadas y carnets QR.', path:'/dashboard/porteria', icon:'scan' },
@@ -17,6 +19,7 @@ const links: Record<string, SchoolLink> = {
  people: { id:'people', title:'Personas y vínculos', description:'Gestiona docentes, apoderados y sus vínculos escolares.', path:'/dashboard#people', icon:'users' },
 }
 export function roleNavigation(roles: string[]): SchoolLink[] {
+ if(familyOnly(roles))return ['overview','attendance','behavior','reports'].map(id=>({...links[id],...(id==='reports'?{title:'Reportes y PDF'}:{})}))
  if(teacherWorkspace(roles))return ['overview','classes','behavior','teacherReports'].map(id=>({...links[id],...(id==='classes'?{title:'Abrir clase / Asistencia QR'}:{}),...(id==='reports'?{title:'Reporte individual / PDF'}:{})}))
  if(auxiliaryOnly(roles))return ['overview','gate','gateRooms','reports'].map(id=>({...links[id],...(id==='gate'?{title:'Escanear QR / Portería',description:'Registra ingresos, salidas autorizadas y retornos. Prioriza QR; usa DNI o nombres si no trae carnet.'}:{}),...(id==='reports'?{title:'Reporte individual / PDF'}:{})}))
  const manager=roles.some(r=>['administrador','director'].includes(r))
@@ -42,7 +45,7 @@ export function roleHome(roles:string[]) {
  if(roles.includes('director'))return{title:'Una mirada a tu comunidad educativa',description:'Consulta los reportes de la institución y acompaña la asistencia y el desarrollo de tus estudiantes.',primary:'direction',cards:['reports','enrollment','behavior','classes'],scope:'Estudiantes de la institución'}
  if(roles.includes('auxiliar'))return{title:'Cada ingreso y salida, al día',description:'Registra los movimientos del colegio y consulta a tus estudiantes desde un mismo espacio.',primary:'gate',cards:['gate','gateRooms','reports'],scope:'Estudiantes de la institución'}
  if(roles.includes('docente'))return{title:'Todo listo para tu próxima clase',description:'Registra la asistencia de tus aulas y acompaña el comportamiento de tus estudiantes.',primary:'classes',cards:['classes','behavior','teacherReports'],scope:'Estudiantes de tus aulas'}
- return{title:'Más cerca de su día a día',description:'Acompaña la asistencia y el comportamiento de los estudiantes vinculados a tu cuenta.',primary:'reports',cards:['reports','classes','behavior','enrollment'],scope:'Estudiantes vinculados a tu cuenta'}
+ return{title:'Más cerca de su día a día',description:'Acompaña la asistencia y el comportamiento de los estudiantes vinculados a tu cuenta.',primary:'attendance',cards:['attendance','behavior','reports'],scope:'Estudiantes vinculados a tu cuenta'}
 }
 export function schoolHref(path:string,school?:string):string {
  const [base,hash]=path.split('#')

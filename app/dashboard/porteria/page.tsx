@@ -1,3 +1,5 @@
+import {redirect} from 'next/navigation'
+import {familyOnly} from '@/lib/school/navigation'
 import Link from 'next/link'
 import { schoolContext } from '@/lib/school/context'
 import { limaDate,formatGateTime,movements,reasons } from '@/lib/school/gate'
@@ -9,6 +11,7 @@ export default async function GatePage({searchParams}:{searchParams:Promise<{sch
  const {supabase,school,roles,setupError}=await schoolContext(params.school)
  const back=<Link href={school?'/dashboard?school='+school:'/dashboard'}>← Volver al panel</Link>
  if(setupError||!school)return <>{back}<h1>Entrada y salida</h1><p className="notice">Debes estar vinculado a una institución configurada.</p></>
+ if(familyOnly(roles))redirect('/dashboard/asistencia?'+new URLSearchParams({school}))
  const registrar=roles.some(r=>['administrador','director','auxiliar'].includes(r)),manager=roles.some(r=>['administrador','director'].includes(r))
  const validDate=params.date && /^\d{4}-\d{2}-\d{2}$/.test(params.date) && !Number.isNaN(Date.parse(params.date)) && params.date===new Date(params.date).toISOString().slice(0,10)
  const date=validDate?params.date!:limaDate()

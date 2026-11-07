@@ -1,3 +1,5 @@
+import FamilyDashboard from './family-dashboard'
+import {familyOnly} from '@/lib/school/navigation'
 import TeacherDashboard from './teacher-dashboard'
 import {teacherWorkspace} from '@/lib/school/navigation'
 import AuxiliaryDashboard from './auxiliary-dashboard'
@@ -24,6 +26,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const session = <form action="/auth/signout" method="post" className="signout"><button className="secondary">Cerrar sesión</button></form>
   if (setupError) return <><h1>Mi panel</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">No se pudo cargar la organización escolar. La base escolar debe estar instalada y disponible en Supabase.</p><p>El acceso a tu cuenta funciona. Contacta con el administrador para habilitar los módulos escolares.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
   if (!school) return <><h1>Bienvenido a Aula al Día</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">Tu cuenta está pendiente de vinculación. La institución debe asignarte un rol; si eres apoderado, también debe vincular a tus hijos.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
+  if(familyOnly(roles))return <FamilyDashboard school={school}/>
   if(auxiliaryOnly(roles))return <AuxiliaryDashboard school={school} message={params.message}/>
   if(teacherWorkspace(roles))return <TeacherDashboard school={school}/>
   const [institutionsResult, classroomsResult, studentsResult, membersResult, teachersResult, guardiansResult, periodsResult] = await Promise.all([

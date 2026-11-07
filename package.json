@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
+    "test:family": "node --experimental-strip-types scripts/family-attendance.mjs",
     "test:permissions": "node scripts/permissions.mjs",
     "test:import": "node --experimental-strip-types scripts/student-import.mjs",
     "test:import-db": "node scripts/unified-import.mjs",

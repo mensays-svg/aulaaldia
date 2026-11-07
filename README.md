@@ -138,3 +138,9 @@ El inicio docente prioriza abrir o continuar una sesión. El QR registra present
 **Activación:** con 001–009 instaladas, ejecutar solo `supabase/migrations/202611070010_teacher_qr_reports.sql`. Véase [DOCENTE.md](supabase/DOCENTE.md) para el recorrido y límites de acceso. Pruebas: `npm run test:teacher-qr`, `npm run test:teacher-pdf`, `npm run test:quick-attendance`, `npm run test:navigation` y `npm run build`.
 
 Los reportes del docente están reunidos en **Mis grados y secciones**: por grado (solo sus secciones asignadas), por sección e individual, con gráficas y PDF. Los accesos individuales anteriores redirigen al mismo espacio. Esta reorganización usa la migración 010 existente y no requiere SQL adicional. Validación: `npm run test:teacher-reports`, `npm run test:navigation`, `npm run build`.
+
+### Familias: asistencia al colegio primero
+
+El apoderado dispone de Inicio, Asistencia de mis hijos, Comportamiento y Reportes y PDF. Su inicio muestra cada hijo vinculado, el primer ingreso del día, la última marcación y si permanece dentro o tiene salida registrada. Sin marcación se indica **Sin ingreso registrado**, sin deducir una falta. Actualiza cada minuto mientras la pantalla está visible y permite refrescar manualmente, consultar fechas anteriores y descargar el PDF del periodo por hijo. Solo consulta información; no registra ni modifica datos.
+
+Las consultas del inicio verifican vínculos explícitos del apoderado además de RLS, por institución. Se retiran aulas, matrículas, padrón y la descarga duplicada del menú familiar; la ruta de matrículas no abre para apoderados y el enlace anterior de portería redirige a la consulta familiar. Las cuentas con otros roles mantienen sus funciones de trabajo. No requiere SQL adicional. Pruebas: `npm run test:family`, `npm run test:navigation`, `npm run test:permissions`, `npm run test:gate`, `npm run test:reports` y `npm run build`.
