@@ -63,3 +63,29 @@ export async function getTeacherReport(school:string,period:string,classroom:str
  }
  return{report:result.data,status:200}
 }
+
+export async function getTeacherGradeReport(school:string,period:string,classroom:string):ReturnType<typeof getTeacherReport>{
+ const seed=await getTeacherReport(school,period,classroom)
+ if(!seed.report)return seed
+ const {schoolContext}=await import('./context'),{normalizeGrade}=await import('./student-import'),{combineTeacherReports}=await import('./teacher-reports')
+ const context=await schoolContext(school)
+ if(context.school!==school)return{status:403,error:'No tienes acceso a esta institución.'}
+ const manager=context.roles.some(r=>['administrador','director'].includes(r)),supabase=context.supabase
+ const assignments=manager?{data:[],error:null}:await supabase.from('teacher_assignments').select('classroom_id').eq('institution_id',school).eq('user_id',context.user.id)
+ if(assignments.error)return{status:503,error:'No se pudieron comprobar las secciones asignadas.'}
+ const source=seed.report.classrooms[0]
+ if(!source)return{status:404,error:'El grado no está disponible.'}
+ const ids:string[]=[]
+ for(let offset=0;;offset+=500){
+  const result=await supabase.from('classrooms').select('id,level,grade').eq('institution_id',school).eq('academic_year',seed.report.period.academic_year).order('id').range(offset,offset+499)
+  if(result.error)return{status:503,error:'No se pudieron cargar las secciones del grado.'}
+  ids.push(...(result.data??[]).filter(r=>r.level===source.level&&normalizeGrade(r.grade)===normalizeGrade(source.grade)&&(manager||assignments.data?.some(a=>a.classroom_id===r.id))).map(r=>r.id))
+  if((result.data?.length??0)<500)break
+ }
+ const reports=[]
+ for(let offset=0;offset<ids.length;offset+=5){
+  const results=await Promise.all(ids.slice(offset,offset+5).map(id=>getTeacherReport(school,period,id)))
+  for(const result of results){if(!result.report)return result;reports.push(result.report)}
+ }
+ try{return{status:200,report:combineTeacherReports(reports)}}catch{return{status:409,error:'La selección cambió mientras se generaba el reporte. Recarga para continuar.'}}
+}

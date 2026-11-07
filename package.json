@@ -24,6 +24,7 @@
     "test:quick-attendance": "node --experimental-strip-types scripts/quick-attendance.mjs",
     "test:auxiliary": "node scripts/auxiliary-role.mjs",
     "test:auxiliary-pdf": "node --experimental-strip-types scripts/auxiliary-pdf.mjs",
+    "test:teacher-reports": "node --experimental-strip-types scripts/teacher-reports.mjs",
     "test:teacher-qr": "node scripts/teacher-qr.mjs",
     "test:teacher-pdf": "npm run test:teacher-qr && node --experimental-strip-types scripts/teacher-pdf.mjs"
   },

@@ -29,6 +29,6 @@ export function buildManagementSections(report:ManagementReport):ReportSection[]
    'Las sesiones pendientes corresponden a las aulas seleccionadas y se cuentan una vez por sesión, no por estudiante. Las tardanzas de portería y de clase se muestran separadas y no se suman para aplicar una penalización.',
    'Los estudiantes sin nota publicada no reciben cero y no entran en el promedio. El promedio institucional se calcula sobre cada evaluación final publicada, no como promedio de promedios de aulas. Es un indicador descriptivo: no cambia la nota de ningún estudiante.',
    'No se deducen faltas por días sin ingreso. Los borradores de asistencia y conducta, las descripciones internas y las anotaciones reservadas no forman parte de este reporte.',
-   report.teacher_scope?'Reporte limitado al aula asignada y a estudiantes actualmente autorizados para el docente. No incluye borradores ni anotaciones internas. No sustituye certificados oficiales ni actas firmadas.':'Reporte de uso institucional para dirección y administración. Refleja los datos disponibles al emitirlo; no sustituye certificados oficiales ni actas firmadas.']},
+   report.teacher_scope?'Reporte limitado a las secciones asignadas y a estudiantes actualmente autorizados para el docente. No incluye borradores ni anotaciones internas. No sustituye certificados oficiales ni actas firmadas.':'Reporte de uso institucional para dirección y administración. Refleja los datos disponibles al emitirlo; no sustituye certificados oficiales ni actas firmadas.']},
  ]
 }

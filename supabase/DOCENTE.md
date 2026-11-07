@@ -32,7 +32,7 @@ El registro de cada QR se guarda en una transacción con su identificador de int
 
 Comportamiento conserva cuatro criterios, nota final, rúbrica, sustento y publicación. Solo estudiantes de las aulas asignadas, según los permisos existentes.
 
-**Mis grados y secciones:** elegir periodo y aula asignada para consultar indicadores, gráficas, detalle y PDF del aula. Incluye accesos a los PDF individuales. Solo usa evaluaciones publicadas, asistencia de sesiones cerradas autorizadas y datos comunicados; no incluye borradores ni anotaciones internas.
+**Mis grados y secciones:** reúne tres vistas: **Por grado** (todas sus secciones asignadas de ese nivel/grado/año), **Por sección** e **Individual** (búsqueda por DNI/nombres). Cada vista ofrece gráficas, detalle y PDF. El reporte individual permanece dentro de esta sección; se retiró su acceso separado del menú e inicio docente. Los enlaces individuales anteriores redirigen aquí. El promedio del grado se calcula con las notas finales publicadas de cada estudiante, incluyendo cero y excluyendo notas sin publicar; no se promedian promedios de aulas. Solo usa evaluaciones publicadas, asistencia de sesiones cerradas autorizadas y datos comunicados; no incluye borradores ni anotaciones internas.
 
 El reporte del aula se limita también a estudiantes que actualmente pertenecen a alguna de las aulas asignadas al docente. Una matrícula histórica no concede acceso a un estudiante trasladado a aulas ajenas. La selección histórica se conserva dentro de ese alcance; la asignación docente actual sigue siendo necesaria. No se cambia el reporte institucional exclusivo de Dirección/Administración.
 
@@ -45,3 +45,5 @@ Las cuentas con varios roles conservan los permisos explícitos de esos roles; e
 - `npm run test:quick-attendance`, `npm run test:navigation`, `npm run build`: guardado/publicación, menú y compilación.
 
 Se prueba el flujo de cámara con decodificador simulado en navegador; comprobar además los permisos y lectura física en el teléfono/lector que se usará en clase. Las pruebas no modifican Supabase real.
+
+Esta reorganización no requiere SQL adicional si ya está instalada la migración 010. Prueba de sumas y promedios: `npm run test:teacher-reports`.

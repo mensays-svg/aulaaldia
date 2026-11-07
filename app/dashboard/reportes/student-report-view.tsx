@@ -1,0 +1,7 @@
+import ReportCharts from './report-charts'
+import ReportDetails from './report-details'
+import {individualAnalytics} from '@/lib/school/report-analytics'
+import {buildReportSections,reportDate,reportTime,type StudentReport} from '@/lib/school/reports'
+export default function StudentReportView({report}:{report:StudentReport}){return <article id="student-report" className="student-report"><header className="report-reference-header"><div className="report-cover-band"><p className="eyebrow">AULA AL DÍA</p><h1>Reporte de seguimiento</h1><p>{report.school.name}</p><span className="report-period-pill">{report.period.name} · {report.period.academic_year}</span></div><div className="report-profile-identity"><p className="eyebrow">ESTUDIANTE</p><h2>{report.student.name}</h2><p>{report.student.period_classroom===undefined?report.student.classroom:report.student.period_classroom??'Sin matrícula registrada para este periodo'} · DNI: {report.student.dni??'Sin DNI'}</p>{report.student.period_classroom!==undefined&&report.student.period_classroom!==report.student.classroom&&<p>Aula actual: {report.student.classroom}</p>}{report.student.enrollment_dates_unknown&&<p>Fecha inicial de matrícula no disponible.</p>}<p>Periodo: {reportDate(report.period.starts_on)} al {reportDate(report.period.ends_on)}</p><small>Emitido: {reportTime(report.issued_at)} (hora de Lima).</small></div></header>
+ <ReportCharts analytics={individualAnalytics(report)}/><ReportDetails sections={buildReportSections(report)}/>
+ </article>}
