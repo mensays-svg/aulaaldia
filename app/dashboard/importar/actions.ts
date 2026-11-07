@@ -18,7 +18,7 @@ export async function importStudents(form: FormData): Promise<ImportResult> {
   const school = String(form.get('school') ?? '')
   const stage = String(form.get('stage') ?? '')
   const { supabase, roles, school: currentSchool } = await schoolContext(school)
-  if (school !== currentSchool || !validUuid(school) || !roles.some(r => ['administrador','director','auxiliar'].includes(r))) return failure('No tienes permiso para importar en esta institución.')
+  if (school !== currentSchool || !validUuid(school) || !roles.some(r => ['administrador','director'].includes(r))) return failure('No tienes permiso para importar en esta institución.')
   if (!['preview','confirm'].includes(stage)) return failure('Vuelve a revisar el archivo.')
   const file = form.get('file')
   if (!(file instanceof File) || !file.name.toLowerCase().endsWith('.csv') || !file.size || file.size > MAX_IMPORT_BYTES) return failure('Selecciona un CSV UTF-8 de hasta 256 KB.')

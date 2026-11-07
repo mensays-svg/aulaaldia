@@ -20,7 +20,7 @@ Cada estudiante tiene una matrícula por año y una sola matrícula activa. Los 
 
 ## Accesos y registros
 
-Solo Director y Administrador modifican matrículas. Auxiliar puede registrar perfiles nuevos, incluso por CSV; los de años futuros quedan planificados e inactivos, y los de años anteriores quedan históricos e inactivos. Para alumnos existentes se usa Matrículas, sin importar otra vez el DNI. El cambio directo de aula o estado en `students` queda restringido; nombre y DNI conservan sus permisos anteriores.
+Solo Director y Administrador modifican matrículas. Desde la migración 009, solo Dirección y Administración registran perfiles nuevos, incluso por CSV; los de años futuros quedan planificados e inactivos, y los de años anteriores quedan históricos e inactivos. Para alumnos existentes se usa Matrículas, sin importar otra vez el DNI. El cambio directo de aula o estado en `students` queda restringido; nombre y DNI conservan sus permisos anteriores.
 
 Las familias ven matrícula/asignaciones de sus hijos, sin motivos administrativos ni datos de compañeros. El docente conserva su alcance por aulas asignadas; una antigua asignación no da acceso al perfil actual del estudiante trasladado. Las listas de sesiones ya creadas permanecen fijas. Al crear una sesión, se toma el alumnado de las asignaciones vigentes en el instante de inicio de esa clase. Las listas de sesiones futuras ya preparadas tampoco se modifican automáticamente.
 

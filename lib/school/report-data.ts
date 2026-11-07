@@ -33,3 +33,18 @@ export async function getManagementReport(school:string,period:string,filters:im
  }
  return{report:result.data,status:200}
 }
+
+export async function getGateClassReport(school:string,classroom:string,date:string):Promise<{report?:import('./gate-reports').GateClassReport;error?:string;status:number}>{
+ if(![school,classroom].every(validUuid)||!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)return{error:'Selecciona un salón y una fecha válidos.',status:400}
+ if(!configured())return{error:'La aplicación no está conectada a Supabase.',status:503}
+ const supabase=await createClient(),{data:{user},error}=await supabase.auth.getUser()
+ if(error||!user)return{error:'Inicia sesión para consultar el reporte.',status:401}
+ const result=await supabase.rpc('gate_classroom_report',{school,classroom,day:date})
+ if(result.error){
+  if(result.error.code==='42501')return{error:'Solo auxiliares, dirección y administración pueden consultar este reporte.',status:403}
+  if(['PGRST202','42883','42P01'].includes(result.error.code))return{error:'Falta activar la migración 202611070009_auxiliary_gate_role.sql en Supabase.',status:503}
+  if(result.error.code==='22023')return{error:'La fecha debe corresponder al año del salón y no puede ser futura.',status:400}
+  return{error:'No se pudo cargar el reporte del salón. Inténtalo de nuevo.',status:503}
+ }
+ return{report:result.data,status:200}
+}

@@ -69,8 +69,8 @@ export async function markGateEvent(form:FormData):Promise<GateResult> {
   return {student:refreshed.student,message:`${movements[movement]} registrada: ${formatGateTime(result.data.occurred_at)}.${result.data.repeated?' El intento ya estaba guardado; no se duplicó.':''}${result.data.is_late===true?' Ingreso con tardanza.':''}${refreshed.error?' Actualiza la ficha para consultar el estado.':''}`}
 }
 export async function generateGateQr(school:string,student:string,rotate:boolean):Promise<GateResult> {
-  const {supabase,allowed}=await staff(school)
-  if (!allowed || !validUuid(student) || typeof rotate!=='boolean') return {error:'No tienes permiso para generar el carnet.'}
+  const {supabase,allowed,roles}=await staff(school)
+  if (!allowed || !roles.some(r=>['administrador','director'].includes(r)) || !validUuid(student) || typeof rotate!=='boolean') return {error:'No tienes permiso para generar el carnet.'}
   const result=await supabase.rpc('get_student_gate_code',{school,student,rotate})
   if (result.error) return {error:errorMessage(result.error)}
   return {qr:`aulaaldia:student:${result.data}`}

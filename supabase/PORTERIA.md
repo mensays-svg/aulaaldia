@@ -33,7 +33,7 @@ Esta marcación no determina si la tardanza está justificada, no descuenta punt
 
 ## Carnets QR
 
-Con el estudiante seleccionado, pulsar **Ver / generar carnet QR**. Se puede imprimir el carnet o descargar la imagen QR. El contenido es `aulaaldia:student:<UUID aleatorio>`, sin DNI ni nombre. Solo personal autorizado de la institución puede resolver ese código. Generarlo otra vez conserva el mismo código; **Reemplazar QR** invalida el anterior.
+Como Director o Administrador, con el estudiante seleccionado, pulsar **Ver / generar carnet QR**. Desde la migración 009, el auxiliar usa los carnets existentes y no los crea ni reemplaza. Se puede imprimir el carnet o descargar la imagen QR. El contenido es `aulaaldia:student:<UUID aleatorio>`, sin DNI ni nombre. Solo personal autorizado de la institución puede resolver ese código. Generarlo otra vez conserva el mismo código; **Reemplazar QR** invalida el anterior.
 
 Para leerlo, pulsar **Abrir cámara QR** y conceder acceso en el navegador. Requiere HTTPS (Vercel) o localhost. El lector intenta usar la cámara trasera y detiene la cámara al leer o cerrar. Si el dispositivo no permite cámara, usar DNI/apellidos o pegar la lectura de un lector externo en el buscador. No se guardan fotografías ni vídeo. Un escaneo identifica al alumno, pero no registra movimientos automáticamente ni autoriza una salida: siempre se verifica y confirma.
 
@@ -55,3 +55,7 @@ Los códigos no son credenciales de inicio de sesión. Un carnet puede copiarse;
 - Comprobar acceso anónimo a `/dashboard/porteria`: debe redirigir al login.
 
 Las pruebas no crean usuarios ni movimientos en el Supabase real. Después de activar, probar el recorrido con un estudiante ficticio, confirmar el historial y probar la cámara en el teléfono que usará el auxiliar. El funcionamiento físico de la cámara no queda demostrado por la prueba de codificación/decodificación.
+
+## Inicio del auxiliar y reportes por salón
+
+La actualización 009 concentra al auxiliar en QR, búsqueda alternativa por DNI/nombres, registro de movimientos y reportes. El PDF individual está en la ficha y en el aviso del último movimiento. El reporte diario por salón está en `/dashboard/porteria/salones`; no convierte falta de ingreso en inasistencia. Para activar los permisos y la consulta del salón, ejecutar solo `202611070009_auxiliary_gate_role.sql` con 001–008 ya instaladas. Véase [AUXILIAR.md](AUXILIAR.md).

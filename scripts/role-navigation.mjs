@@ -7,6 +7,10 @@ for(const role of ['docente','auxiliar','apoderado']){
 }
 assert.ok(!ids(['auxiliar']).includes('behavior'));checks++
 assert.ok(!ids(['auxiliar']).includes('classes'));checks++
+assert.ok(!ids(['auxiliar']).includes('enrollment'));checks++
+assert.ok(!ids(['auxiliar']).includes('rooms'));checks++
+assert.ok(ids(['auxiliar']).includes('gateRooms'));checks++
+assert.ok(ids(['auxiliar']).includes('reports'));checks++
 for(const role of ['director','administrador']){assert.ok(ids([role]).includes('direction'));assert.ok(ids([role]).includes('people'));checks+=2}
 for(const [role,primary]of Object.entries({director:'direction',administrador:'people',auxiliar:'gate',docente:'classes',apoderado:'reports'})){
  const home=roleHome([role]);assert.equal(home.primary,primary);assert.ok(ids([role]).includes(home.primary));assert.ok(home.cards.every(id=>ids([role]).includes(id)));checks+=3

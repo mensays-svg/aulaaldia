@@ -48,7 +48,7 @@ El DNI es obligatorio en la carga masiva. Los alumnos sin DNI pueden registrarse
 
 La vista previa lista los estudiantes y distingue aulas existentes de aulas por crear. Antes de confirmar no se guarda nada. La nueva función de base de datos comprueba permisos, DNI y campos otra vez y guarda aulas y estudiantes en una única transacción: si falla un registro, se revierte todo el lote. Un reintento con los mismos DNI no duplica estudiantes. Si se pierde la conexión, comprueba el listado antes de volver a intentarlo.
 
-**Activación necesaria:** si ya instalaste la base escolar, ejecuta únicamente `supabase/migrations/202611050002_unified_student_import.sql` en Supabase SQL Editor. No repitas la primera migración ni el bootstrap. Para una instalación nueva, aplica todas las migraciones en orden y después el bootstrap. La función permite esta importación a administrador, director y auxiliar dentro de su institución; no abre creación de aulas a docentes ni apoderados.
+**Activación necesaria:** si ya instalaste la base escolar, ejecuta únicamente `supabase/migrations/202611050002_unified_student_import.sql` en Supabase SQL Editor. No repitas la primera migración ni el bootstrap. Para una instalación nueva, aplica todas las migraciones en orden y después el bootstrap. La función permite esta importación a administrador y director dentro de su institución; no abre creación de aulas a docentes ni apoderados.
 
 Validación: `npm run test:import`, `npm run test:import-db`, `npm run test:permissions` y `npm run build`. Las pruebas PostgreSQL se ejecutan en PGlite con usuarios simulados; no modifican datos reales.
 
@@ -124,3 +124,9 @@ El PDF usa una ficha visual con cabecera institucional, tarjetas de indicadores,
 No requiere SQL adicional. Validación del guardado/publicación con cambios simultáneos: `npm run test:quick-attendance`; permisos y ciclo de clases: `npm run test:classes`.
 
 La ficha individual sigue el diseño de referencia: cabecera azul con periodo destacado, identidad del estudiante, tarjetas grandes de ingresos, clases, puntualidad y nota final; fondo claro y bloques redondeados. El caso sin registros muestra **Otros registros** y una explicación breve, sin barras vacías ni párrafos repetidos. La vista web usa la misma jerarquía. Los reportes con datos conservan sus gráficas y anexos; aula del periodo, matrícula sin fecha y límites de acceso siguen diferenciados.
+
+### Auxiliar: QR primero y reportes de portería
+
+El auxiliar tiene un inicio específico para escanear QR, búsqueda alternativa por DNI/nombres, confirmación de movimientos y PDF individual. Reportes por salón muestra ingresos, tardanzas, salidas y retornos por fecha, sin convertir falta de ingreso en inasistencia. No puede crear/importar/editar estudiantes, administrar carnets, modificar matrículas ni calificar conducta. Las salidas anticipadas mantienen motivo y autorización obligatorios.
+
+**Activación necesaria:** con 001–008 instaladas, ejecutar solo `supabase/migrations/202611070009_auxiliary_gate_role.sql`. Restringe los permisos también en Supabase y añade la consulta diaria por salón. No borra datos ni invalida QR existentes. Consulta [la guía del auxiliar](supabase/AUXILIAR.md). Pruebas: `npm run test:auxiliary`, `npm run test:navigation`, `npm run build`.

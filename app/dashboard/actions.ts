@@ -13,7 +13,7 @@ export async function manageSchool(form: FormData) {
   if (!validUuid(school) || school !== currentSchool) done('Institución no válida.')
   const admin = roles.includes('administrador')
   const manager = admin || roles.includes('director')
-  const registrar = manager || roles.includes('auxiliar')
+  const registrar = manager
   let error: { code?: string } | null = null
   if (intent === 'classroom' && manager) {
     const year = Number(get('year'))

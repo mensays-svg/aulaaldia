@@ -10,6 +10,7 @@ export default async function EnrollmentsPage({searchParams}:{searchParams:Promi
  const{supabase,school,roles,setupError}=await schoolContext(params.school)
  const back=<Link href={school?'/dashboard?school='+school:'/dashboard'}>← Volver al panel</Link>
  if(setupError||!school)return <>{back}<h1>Matrículas e historial</h1><p className="notice">Debes estar vinculado a una institución.</p></>
+ if(!roles.some(r=>['administrador','director','docente','apoderado'].includes(r)))return <div className="workspace">{back}<h1>Acceso restringido</h1><p>El auxiliar consulta el padrón y la asistencia desde los reportes de portería.</p></div>
  const manager=roles.some(r=>['administrador','director'].includes(r))
  const installation=await supabase.from('student_enrollments').select('id').eq('institution_id',school).limit(1)
  if(installation.error)return <div className="workspace">{back}<h1>Matrículas e historial</h1><p role="alert" className="notice">No se pudo cargar el módulo. Si aún no está instalado, ejecuta únicamente 202611050008_enrollment_history.sql en Supabase. No repitas scripts anteriores.</p></div>

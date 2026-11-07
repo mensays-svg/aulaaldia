@@ -1,3 +1,5 @@
+import AuxiliaryDashboard from './auxiliary-dashboard'
+import {auxiliaryOnly} from '@/lib/school/navigation'
 import Link from 'next/link'
 import { schoolContext, roleLabels } from '@/lib/school/context'
 import { manageSchool } from './actions'
@@ -16,10 +18,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const params = await searchParams
   const { supabase, user, memberships, school, roles, setupError } = await schoolContext(params.school)
   const manager = roles.includes('administrador') || roles.includes('director')
-  const registrar = manager || roles.includes('auxiliar')
+  const registrar = manager
   const session = <form action="/auth/signout" method="post" className="signout"><button className="secondary">Cerrar sesión</button></form>
   if (setupError) return <><h1>Mi panel</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">No se pudo cargar la organización escolar. La base escolar debe estar instalada y disponible en Supabase.</p><p>El acceso a tu cuenta funciona. Contacta con el administrador para habilitar los módulos escolares.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
   if (!school) return <><h1>Bienvenido a Aula al Día</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">Tu cuenta está pendiente de vinculación. La institución debe asignarte un rol; si eres apoderado, también debe vincular a tus hijos.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
+  if(auxiliaryOnly(roles))return <AuxiliaryDashboard school={school} message={params.message}/>
   const [institutionsResult, classroomsResult, studentsResult, membersResult, teachersResult, guardiansResult, periodsResult] = await Promise.all([
     supabase.from('institutions').select('id,name'),
     supabase.from('classrooms').select('id,academic_year,level,grade,section').eq('institution_id', school).order('academic_year', { ascending: false }).order('grade').order('section'),
