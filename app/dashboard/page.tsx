@@ -18,7 +18,7 @@ type Student = { id: string; classroom_id: string; first_names: string; last_nam
 type Member = { user_id: string; email: string; role: string }
 const label = (c: Classroom) => `${c.academic_year} · ${c.level} ${c.grade} ${c.section}`
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ school?: string; q?: string; message?: string }> }) {
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ school?: string; q?: string; message?: string; period?:string }> }) {
   const params = await searchParams
   const { supabase, user, memberships, school, roles, setupError } = await schoolContext(params.school)
   const manager = roles.includes('administrador') || roles.includes('director')
@@ -26,7 +26,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const session = <form action="/auth/signout" method="post" className="signout"><button className="secondary">Cerrar sesión</button></form>
   if (setupError) return <><h1>Mi panel</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">No se pudo cargar la organización escolar. La base escolar debe estar instalada y disponible en Supabase.</p><p>El acceso a tu cuenta funciona. Contacta con el administrador para habilitar los módulos escolares.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
   if (!school) return <><h1>Bienvenido a Aula al Día</h1><p>Sesión iniciada como {user.email}.</p><p className="notice">Tu cuenta está pendiente de vinculación. La institución debe asignarte un rol; si eres apoderado, también debe vincular a tus hijos.</p><p><Link href="/dashboard/seguridad">Cambiar contraseña</Link></p>{session}</>
-  if(familyOnly(roles))return <FamilyDashboard school={school}/>
+  if(familyOnly(roles))return <FamilyDashboard school={school} period={params.period}/>
   if(auxiliaryOnly(roles))return <AuxiliaryDashboard school={school} message={params.message}/>
   if(teacherWorkspace(roles))return <TeacherDashboard school={school}/>
   const [institutionsResult, classroomsResult, studentsResult, membersResult, teachersResult, guardiansResult, periodsResult] = await Promise.all([

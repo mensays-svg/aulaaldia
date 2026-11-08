@@ -1,3 +1,5 @@
+import FamilyPeriodReport from '../family-period-report'
+import {familyOnly} from '@/lib/school/navigation'
 import {redirect} from 'next/navigation'
 import {teacherWorkspace} from '@/lib/school/navigation'
 import StudentReportView from './student-report-view'
@@ -14,6 +16,7 @@ export default async function ReportsPage({searchParams}:{searchParams:Promise<{
  const {supabase,school,roles,setupError}=await schoolContext(params.school)
  const back=<Link href={school?'/dashboard?school='+school:'/dashboard'}>← Volver al panel</Link>
  if(setupError||!school)return <>{back}<h1>Reportes</h1><p className="notice">Tu cuenta debe estar vinculada a una institución.</p></>
+ if(familyOnly(roles))return <FamilyPeriodReport school={school} student={params.student} period={params.period} view='reports'/>
  if(teacherWorkspace(roles))redirect('/dashboard/reportes/docente?'+new URLSearchParams({school,mode:'individual',...(params.student?{student:params.student}:{}),...(params.period?{period:params.period}:{}),...(params.q?{q:params.q}:{})}))
  const periodsResult=await supabase.from('behavior_periods').select('id,name,academic_year,starts_on,ends_on').eq('institution_id',school).order('academic_year',{ascending:false}).order('starts_on',{ascending:false}).limit(1000)
  if(periodsResult.error)return <div className="workspace">{back}<h1>Reportes</h1><p className="notice">No se pudieron cargar los periodos. Comprueba que los módulos escolares estén instalados.</p></div>
