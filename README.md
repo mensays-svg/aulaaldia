@@ -152,3 +152,19 @@ La consulta familiar no utiliza buscadores de estudiantes. Con un hijo vinculado
 Se consolidan los flujos del auxiliar (QR y salidas autorizadas), docente (apertura de clase y reportes agrupados/individuales) y familias (hijos vinculados, asistencia de hoy y consulta por bimestre sin buscador). El menú familiar conserva hijo y bimestre al cambiar de módulo; consultar una fecha y volver a Hoy también conserva la selección. La consulta diaria queda abierta al mostrar una fecha solicitada y evita repetir el selector bimestral. Mi cuenta conserva la institución al regresar al panel.
 
 La actualización utiliza las migraciones ya instaladas, hasta 010; no añade SQL. Para validar todas las funciones localmente: `npm run verify`. Ejecuta 20 suites de pruebas, incluida la prueba docente que incorpora su validación QR, y compila producción. Los datos de prueba se generan localmente; no modifica estudiantes ni marcaciones de Supabase real. Para revisar las rutas públicas y el bloqueo sin sesión, con el servidor iniciado: `TEST_BASE_URL=http://localhost:3000 node scripts/smoke.mjs`.
+
+### Flujo completo de uso
+
+| Cuenta | Recorrido principal |
+| --- | --- |
+| Administración | Configurar bimestres y rúbrica → cargar estudiantes y aulas → vincular personal/apoderados → supervisar reportes. |
+| Dirección | Vista general → filtrar grado/sección/bimestre → revisar indicadores y PDF institucional o individual. |
+| Auxiliar | Escanear QR (o DNI/nombres) → confirmar ingreso/salida autorizada → consultar salón o reporte individual. |
+| Docente | Abrir o continuar clase → QR o lista manual → revisar pendientes → guardar y publicar → comportamiento → Mis grados y secciones. |
+| Familia | Ver primero la asistencia de hoy de sus hijos → elegir bimestre → asistencia/comportamiento → reporte y PDF, sin buscador de estudiantes. |
+
+El selector de institución está en el menú común de todas las pantallas, también en móvil, únicamente cuando hay más de una institución vinculada. Cambiar institución vuelve a su inicio por rol y descarta filtros de estudiantes/sesiones de la institución anterior. Se eliminan los selectores duplicados de los inicios.
+
+Los borradores manuales de asistencia y evaluación de comportamiento avisan al intentar abandonar la pantalla mediante enlaces, cambiar institución, cerrar sesión o recargar. Guardar elimina el aviso. Las descargas PDF, enlaces al detalle de la misma página y nuevas pestañas no interrumpen el trabajo. Las pantallas de carga y recuperación de errores ofrecen una salida clara para todo el panel. Un enlace anterior de clase para una familia abre su consulta de asistencia; el auxiliar recibe accesos hacia portería/reportes en lugar de formularios docentes.
+
+Validación: `npm run verify` ejecuta 21 suites y la compilación. `npm run test:flow` comprueba protección del borrador, confirmación/cancelación y limpieza de escuchas después de guardar. El selector y los borradores también se verificaron con React en Chromium usando datos controlados. No añade SQL ni modifica la base escolar real durante las pruebas.

@@ -20,7 +20,7 @@ const label = (c: Classroom) => `${c.academic_year} · ${c.level} ${c.grade} ${c
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ school?: string; q?: string; message?: string; period?:string }> }) {
   const params = await searchParams
-  const { supabase, user, memberships, school, roles, setupError } = await schoolContext(params.school)
+  const { supabase, user, school, roles, setupError } = await schoolContext(params.school)
   const manager = roles.includes('administrador') || roles.includes('director')
   const registrar = manager
   const session = <form action="/auth/signout" method="post" className="signout"><button className="secondary">Cerrar sesión</button></form>
@@ -57,7 +57,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   return <div className="workspace dashboard-home">
     <header className="school-header dashboard-heading"><div><p className="eyebrow">MI ESPACIO ESCOLAR</p><h1>{institutions.find(i => i.id === school)?.name ?? 'Mi institución'}</h1><p>{roles.map(r => roleLabels[r]).join(' · ')}</p></div><span className="school-year">{new Intl.DateTimeFormat('es-PE',{year:'numeric',timeZone:'America/Lima'}).format(new Date())} · Año actual</span></header>
     <div className="dashboard-welcome"><div><p className="eyebrow">CONECTAMOS CADA DÍA</p><h2>{home.title}</h2><p>{home.description}</p>{primary&&<Link className="button-link" href={schoolHref(primary.path,school)}>{primary.title}<Icon name="arrow"/></Link>}</div><div className="welcome-art" aria-hidden="true"><span className="art-ring"/><span className="art-tile"><Icon name="book"/></span><span className="art-dot dot-one"/><span className="art-dot dot-two"/><span className="art-caption">Aprender. Acompañar. Crecer.</span></div></div>
-    {new Set(memberships.map(m => m.institution_id)).size > 1 && <form method="get"><label>Institución<select name="school" defaultValue={school}>{institutions.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></label><button>Seleccionar institución</button></form>}
     {params.message && <p className="notice" role="status">{params.message}</p>}
     {failed && <p className="notice" role="alert">No se pudieron cargar todos los datos. Intenta recargar la página. Los totales pueden estar incompletos.</p>}
     <div className="metrics"><article><span className="metric-icon"><Icon name="users"/></span><div><span>{home.scope}</span><strong>{students.length}</strong></div></article><article><span className="metric-icon lavender"><Icon name="book"/></span><div><span>Aulas disponibles para tu cuenta</span><strong>{classrooms.length}</strong></div></article><article><span className="metric-icon amber"><Icon name="folder"/></span><div><span>Estudiantes activos de tu selección</span><strong>{students.filter(s=>s.active).length}</strong></div></article></div>

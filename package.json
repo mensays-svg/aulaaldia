@@ -8,6 +8,7 @@
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "verify": "node scripts/verify.mjs",
+    "test:flow": "node scripts/unsaved-flow.mjs",
     "test:family": "node --experimental-strip-types scripts/family-attendance.mjs && node scripts/family-period.mjs",
     "test:permissions": "node scripts/permissions.mjs",
     "test:import": "node --experimental-strip-types scripts/student-import.mjs",

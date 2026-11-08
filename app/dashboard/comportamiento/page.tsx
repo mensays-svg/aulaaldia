@@ -1,5 +1,5 @@
 import FamilyPeriodReport from '../family-period-report'
-import {familyOnly} from '@/lib/school/navigation'
+import {familyOnly,auxiliaryOnly} from '@/lib/school/navigation'
 import Link from 'next/link'
 import {schoolContext} from '@/lib/school/context'
 import {validUuid} from '@/lib/school/validation'
@@ -13,6 +13,7 @@ export default async function BehaviorPage({searchParams}:{searchParams:Promise<
  const back=<Link href={school?'/dashboard?school='+school:'/dashboard'}>← Volver al panel</Link>
  if(setupError||!school)return <>{back}<h1>Comportamiento</h1><p className="notice">Debes estar vinculado a una institución configurada.</p></>
  if(familyOnly(roles))return <FamilyPeriodReport school={school} student={params.student} period={params.period} view='behavior'/>
+ if(auxiliaryOnly(roles))return <div className="workspace">{back}<h1>Consulta de reportes</h1><p>El auxiliar consulta la asistencia y los reportes individuales publicados desde portería.</p><Link className="button-link" href={'/dashboard/reportes?school='+school}>Ver reportes individuales</Link></div>
  const manager=roles.some(r=>['administrador','director'].includes(r))
  const [periodsResult,rubricsResult]=await Promise.all([
   supabase.from('behavior_periods').select('id,name,academic_year,starts_on,ends_on').eq('institution_id',school).order('academic_year',{ascending:false}).order('starts_on',{ascending:false}).limit(1000),

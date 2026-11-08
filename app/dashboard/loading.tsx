@@ -1,0 +1,1 @@
+export default function Loading(){return <div className="workspace workspace-loading" role="status" aria-live="polite" aria-busy="true"><p className="eyebrow">AULA AL DÍA</p><h1>Cargando tu espacio…</h1><p>Estamos consultando la información de tu institución.</p><div className="loading-line" aria-hidden="true"/><div className="loading-line short" aria-hidden="true"/></div>}

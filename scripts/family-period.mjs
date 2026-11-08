@@ -8,7 +8,7 @@ function load(path,mocks={}){const module={exports:{}},code=ts.transpileModule(r
 let own=[{id:'child1',first_names:'Ana',last_names:'Prueba',institution_id:'school'},{id:'child2',first_names:'Luis',last_names:'Prueba',institution_id:'school'}],fail=false,calls=[]
 const periods=[{id:'p1',name:'I Bimestre',academic_year:2026,starts_on:'2026-03-01',ends_on:'2026-05-15'},{id:'p2',name:'II Bimestre',academic_year:2026,starts_on:'2026-05-16',ends_on:'2026-07-31'}]
 const supabase={from(table){const filters=[];let ids;const q={select(){return q},eq(key,value){filters.push([key,value]);return q},in(key,value){ids=value;return q},order(){return q},range(){return q},limit(){return q},then(resolve){let data=table==='student_guardians'?own.map(c=>({student_id:c.id,user_id:'parent',institution_id:'school'})):table==='students'?[...own,{id:'other-child',first_names:'Otro',last_names:'Privado',institution_id:'school'}]:periods.map(p=>({...p,institution_id:'school'}));data=data.filter(row=>filters.every(([key,value])=>row[key]===value));if(ids)data=data.filter(c=>ids.includes(c.id));resolve({data:fail?null:data,error:fail?{message:'offline'}:null})}};return q}}
-const context={school:'school',roles:['apoderado'],user:{id:'parent'},supabase},family=load('../lib/school/family-children.ts')
+const context={school:'school',roles:['apoderado'],user:{id:'parent'},memberships:[{institution_id:'school'}],supabase},family=load('../lib/school/family-children.ts')
 assert.deepEqual((await family.familyChildren(context)).children.map(c=>c.id),['child1','child2'])
 assert.equal(family.familySelection(own,'other-child'),undefined)
 const mocks={'next/link':{default:({href,children,...props})=>React.createElement('a',{href,...props},children)},'@/lib/school/context':{schoolContext:async()=>context},'@/lib/school/navigation':{familyOnly:r=>r.includes('apoderado')},'@/lib/school/family-children':family,'@/lib/school/gate':{limaDate:()=>'2026-06-01'},'@/lib/school/report-data':{getStudentReport:async(s,c,p)=>{calls.push([s,c,p]);return{report:{student:{id:c,name:c},period:periods.find(v=>v.id===p)}}}},'@/lib/school/reports':{buildReportSections:()=>[]},'@/lib/school/report-analytics':{individualAnalytics:()=>({metrics:[],charts:[]})},'./reportes/student-report-view':{default:()=>React.createElement('p',null,'Reporte familiar')},'./reportes/report-charts':{default:()=>null},'./reportes/report-details':{default:()=>null}}
@@ -22,6 +22,11 @@ assert.ok(!html.includes('other-child'))
 assert.ok(html.includes('name="student"'))
 assert.ok(html.includes('I Bimestre'))
 assert.ok(html.includes('student=child2&amp;period=p1'))
+const Home=load('../app/dashboard/family-dashboard.tsx',{...mocks,'@/lib/school/family-attendance':load('../lib/school/family-attendance.ts'),'./family-refresh':{default:()=>React.createElement('button',null,'Actualizar asistencia')}}).default
+const home=renderToStaticMarkup(await Home({school:'school'}))
+assert.ok(home.indexOf('family-students')<home.indexOf('Consulta por bimestre'))
+assert.ok(!home.includes('name="q"'))
+assert.ok(!home.includes('name="school" defaultValue'))
 calls=[];assert.match(await render({student:'other-child'}),/no está vinculado/);assert.equal(calls.length,0)
 assert.match(await render({period:'invalid'}),/no está disponible/);assert.equal(calls.length,0)
 own=own.slice(0,1);const single=await render();assert.match(single,/type="hidden" name="student"/);assert.ok(!single.includes('<select name="student"'))

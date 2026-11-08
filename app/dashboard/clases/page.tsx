@@ -1,3 +1,5 @@
+import {redirect} from 'next/navigation'
+import {familyOnly,auxiliaryOnly} from '@/lib/school/navigation'
 import Link from 'next/link'
 import { schoolContext } from '@/lib/school/context'
 import { validUuid } from '@/lib/school/validation'
@@ -11,6 +13,8 @@ export default async function ClassesPage({searchParams}:{searchParams:Promise<{
  const {supabase,user,school,roles,setupError}=await schoolContext(params.school)
  const back=<Link href={school?'/dashboard?school='+school:'/dashboard'}>← Volver al panel</Link>
  if(setupError||!school)return <>{back}<h1>Asistencia por clase</h1><p className="notice">Primero debes estar vinculado a una institución configurada.</p></>
+ if(familyOnly(roles))redirect('/dashboard/asistencia?'+new URLSearchParams({school,...(params.date?{date:params.date}:{})}))
+ if(auxiliaryOnly(roles))return <div className="workspace">{back}<h1>Asistencia al colegio</h1><p>Registra ingresos y salidas desde portería y consulta tus reportes por salón.</p><Link className="button-link" href={'/dashboard?school='+school}>Escanear QR en portería</Link></div>
  const manager=roles.some(r=>['administrador','director'].includes(r)),teacher=roles.includes('docente')
  const date=params.date&&validClassDate(params.date)?params.date:limaDate()
  const page=Math.max(1,Math.min(100000,Math.trunc(Number(params.page))||1))

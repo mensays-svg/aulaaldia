@@ -1,4 +1,5 @@
 'use client'
+import {useUnsavedChanges} from '@/app/components/unsaved-changes'
 import { useEffect,useRef,useState,useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createCourse,createSession,loadClass,saveAttendance,changeSessionState,scanClassQr } from './actions'
@@ -40,6 +41,7 @@ function initialMarks(detail:ClassDetail){return Object.fromEntries(detail.stude
 export function ClassRegister({school,initial,autoScan=false}:{school:string;initial:ClassDetail;autoScan?:boolean}){
  const router=useRouter(),[pending,startTransition]=useTransition()
  const [detail,setDetail]=useState(initial),[marks,setMarks]=useState(initialMarks(initial)),[dirty,setDirty]=useState(false)
+ useUnsavedChanges(dirty)
  const [reason,setReason]=useState(''),[message,setMessage]=useState('')
  const [camera,setCamera]=useState(autoScan),[qrText,setQrText]=useState(''),[query,setQuery]=useState(''),[onlyPending,setOnlyPending]=useState(false),[highlight,setHighlight]=useState('')
  const attempt=useRef<{text:string;id:string}|null>(null),lastCode=useRef(''),qrInput=useRef<HTMLInputElement>(null),focusQr=useRef(false)
