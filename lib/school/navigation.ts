@@ -51,3 +51,12 @@ export function schoolHref(path:string,school?:string):string {
  const [base,hash]=path.split('#')
  return base+(school?'?'+new URLSearchParams({school}):'')+(hash?'#'+hash:'')
 }
+
+// Carry family selection between consultations without carrying search or editing fields.
+export function familyHref(path:string,school:string|undefined,params:{get(name:string):string|null}):string{
+ const [base,hash]=path.split('#'),query=new URLSearchParams(school?{school}:{})
+ if(['/dashboard','/dashboard/asistencia','/dashboard/comportamiento','/dashboard/reportes'].includes(base)){
+  for(const name of ['student','period']){const value=params.get(name);if(value&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value))query.set(name,value)}
+ }
+ return base+(query.size?'?'+query:'')+(hash?'#'+hash:'')
+}

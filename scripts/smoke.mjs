@@ -6,7 +6,7 @@ for (const path of ['/', '/login']) {
   assert.match(await response.text(), /Aula al Día/)
   console.log('PASS', path)
 }
-for (const path of ['/dashboard', '/dashboard/private', '/auth/confirm?token_hash=bad&type=invalid']) {
+for (const path of ['/dashboard', '/dashboard/private', '/dashboard/asistencia', '/dashboard/comportamiento', '/dashboard/reportes', '/dashboard/reportes/docente', '/dashboard/porteria/salones', '/dashboard/matriculas', '/auth/confirm?token_hash=bad&type=invalid']) {
   const response = await fetch(base + path, { redirect: 'manual' })
   assert.equal(response.status, 307)
   assert.equal(new URL(response.headers.get('location'), base).pathname, '/login')
